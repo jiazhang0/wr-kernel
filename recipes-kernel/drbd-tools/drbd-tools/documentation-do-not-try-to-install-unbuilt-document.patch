@@ -1,0 +1,36 @@
+From d832bcbedd46afe76a87788c89737a7c0d61aa70 Mon Sep 17 00:00:00 2001
+From: Michel Thebeau <michel.thebeau@windriver.com>
+Date: Thu, 28 Nov 2013 12:46:55 -0500
+Subject: [PATCH] documentation: do not try to install unbuilt documentation
+
+There are two issues here:
+
+By default the documentation is not compiled with make all, but make all
+tries to install it.
+
+When compile is enabled for documentation, it is expecting GLIBC_2.14:
+/lib/libc.so.6: version `GLIBC_2.14' not found (required by ../user/drbdsetup)
+
+Disable documentation for drbd.
+
+Signed-off-by: Michel Thebeau <michel.thebeau@windriver.com>
+---
+ Makefile.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index fd6a744..de13e70 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -56,7 +56,7 @@ KDIR ?= /lib/modules/$(KVER)/build
+ # and not in e.g. dash. I'm too lazy to fix it to be compatible.
+ SHELL=/bin/bash
+ 
+-SUBDIRS     = user scripts documentation drbd
++SUBDIRS     = user scripts drbd
+ 
+ REL_VERSION := $(shell $(SED) -ne '/^\#define REL_VERSION/{s/^[^"]*"\([^ "]*\).*/\1/;p;q;}' drbd/linux/drbd_config.h)
+ ifdef FORCE
+-- 
+1.8.4.93.g57e4c17
+

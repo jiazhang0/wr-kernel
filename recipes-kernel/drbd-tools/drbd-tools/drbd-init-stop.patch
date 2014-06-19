@@ -1,0 +1,15 @@
+---
+ scripts/drbd |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/scripts/drbd
++++ b/scripts/drbd
+@@ -209,7 +209,7 @@ case "$1" in
+ 			$DRBDSETUP "$d" down
+ 		done
+ 		_udev_settle &> /dev/null
+-		if [ ! -z $(cat /proc/modules | grep -w drbd)]; then
++		if [ ! -z "$(cat /proc/modules | grep -w drbd)" ]; then
+ 			$RMMOD drbd
+ 		fi
+ 	fi

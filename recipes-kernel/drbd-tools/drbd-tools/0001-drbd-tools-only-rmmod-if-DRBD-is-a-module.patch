@@ -1,0 +1,36 @@
+From 524e5640020b81a4d425b22b682d13acae62e2af Mon Sep 17 00:00:00 2001
+From: Aws Ismail <aws.ismail@windriver.com>
+Date: Tue, 5 Mar 2013 00:58:39 -0500
+Subject: [PATCH] drbd-tools: only rmmod if DRBD is a module
+
+Account for the case if the DRBD drive is built into
+the kernel. Otherwise, errors, like the following,
+will occur:
+
+root@localhost:~# /etc/init.d/drbd stop
+    Stopping all DRBD resources: ERROR: Module drbd does not exist in
+    /proc/modules
+
+Signed-off-by: Aws Ismail <aws.ismail@windriver.com>
+---
+ scripts/drbd |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/drbd b/scripts/drbd
+index 2538e8b..461f4db 100755
+--- a/scripts/drbd
++++ b/scripts/drbd
+@@ -209,7 +209,9 @@ case "$1" in
+ 			$DRBDSETUP "$d" down
+ 		done
+ 		_udev_settle &> /dev/null
+-		$RMMOD drbd
++		if [ ! -z $(cat /proc/modules | grep -w drbd)]; then
++			$RMMOD drbd
++		fi
+ 	fi
+ 	[ -f /var/lock/subsys/drbd ] && rm /var/lock/subsys/drbd
+ 	log_end_msg 0
+-- 
+1.7.4.1
+

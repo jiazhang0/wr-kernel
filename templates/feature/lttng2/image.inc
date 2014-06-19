@@ -1,0 +1,5 @@
+IMAGE_INSTALL += "lttng-tools"
+IMAGE_INSTALL += "lttng-ust"
+IMAGE_INSTALL += "lttng-ust-dbg"
+IMAGE_INSTALL += "babeltrace"
+IMAGE_INSTALL += "python-core"

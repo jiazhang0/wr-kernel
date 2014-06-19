@@ -1,0 +1,133 @@
+From 4ce8a38716dd6d3bb67130c21151ecdf413245c1 Mon Sep 17 00:00:00 2001
+From: Yang Shi <yang.shi@windriver.com>
+Date: Fri, 23 Aug 2013 16:48:08 -0700
+Subject: [PATCH 3/5] libhugetlbfs: Fix cross compile
+
+Do not detect arch using `uname`, instead just use the ARCH, CC that we set
+from the recipe.
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ Makefile |   52 ++++++++++++++++++----------------------------------
+ 1 files changed, 18 insertions(+), 34 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 28ceade..9e21171 100644
+--- a/Makefile
++++ b/Makefile
+@@ -32,65 +32,63 @@ CFLAGS ?= -O2 -g
+ CFLAGS += -Wall -fPIC
+ CPPFLAGS += -D__LIBHUGETLBFS__
+ 
+-ARCH = $(shell uname -m | sed -e s/i.86/i386/)
+-
+ CUSTOM_LDSCRIPTS = yes
+ 
+-ifeq ($(ARCH),ppc64)
+-CC64 = gcc -m64
++ifeq ($(ARCH),powerpc64)
++CC64 = $(CC) -m64
+ ELF64 = elf64ppc
+ TMPLIB64 = lib64
+ TMPLIB32 = lib
+ ifneq ($(BUILDTYPE),NATIVEONLY)
+-CC32 = gcc -m32
++CC32 = $(CC) -m32
+ ELF32 = elf32ppclinux
+ endif
+ else
+-ifeq ($(ARCH),ppc)
+-CC32 = gcc -m32
++ifeq ($(ARCH),powerpc)
++CC32 = $(CC) -m32
+ ELF32 = elf32ppclinux
+ TMPLIB32 = lib
+ else
+-ifeq ($(ARCH),armv7l)
+-CC32 = gcc
++ifeq ($(ARCH),arm)
++CC32 = $(CC)
+ TMPLIB32 = lib
+ ELF32 += armelf_linux_eabi
+ CUSTOM_LDSCRIPTS = no
+ else
+ ifeq ($(ARCH),aarch64)
+-CC64 = gcc
++CC64 = $(CC)
+ ELF64 = aarch64elf_linux
+ TMPLIB64 = lib64
+ CUSTOM_LDSCRIPTS = no
+ else
+-ifeq ($(ARCH),i386)
+-CC32 = gcc
++ifeq ($(ARCH),i586)
++CC32 = $(CC)
+ ELF32 = elf_i386
+-TMPLIB32 = lib
++TMPLIB32 ib
+ else
+ ifeq ($(ARCH),x86_64)
+-CC64 = gcc -m64
++CC64 = $(CC) -m64
+ ELF64 = elf_x86_64
+ TMPLIB64 = lib64
+ TMPLIB32 = lib
+ ifneq ($(BUILDTYPE),NATIVEONLY)
+-CC32 = gcc -m32
++CC32 = $(CC) -m32
+ ELF32 = elf_i386
+ endif
+ else
+ ifeq ($(ARCH),ia64)
+-CC64 = gcc
++CC64 = $(CC)
+ TMPLIB64 = lib64
+ CFLAGS += -DNO_ELFLINK
+ else
+ ifeq ($(ARCH),sparc64)
+-CC64 = gcc -m64
++CC64 = $(CC) -m64
+ TMPLIB64 = lib64
+ CFLAGS += -DNO_ELFLINK
+ else
+ ifeq ($(ARCH),s390x)
+-CC64 = gcc -m64
+-CC32 = gcc -m31
++CC64 = $(CC) -m64
++CC32 = $(CC) -m31
+ ELF32 = elf_s390
+ ELF64 = elf64_s390
+ TMPLIB64 = lib64
+@@ -150,20 +148,6 @@ ifeq ($(CUSTOM_LDSCRIPTS),yes)
+ TEST_LDSCRIPTS = -l
+ endif
+ 
+-# If TMPLIB64 is set, then sure we are not resolving LIB32 and LIB64 to the
+-# same place
+-ifdef TMPLIB64
+-
+-REALLIB32 = $(realpath $(PREFIX)/$(LIB32))
+-REALLIB64 = $(realpath $(PREFIX)/$(LIB64))
+-ifneq ($(realpath $(PREFIX)),)
+-ifeq ($(REALLIB32),$(REALLIB64))
+-$(error LIB32 ($(PREFIX)/$(LIB32) to $(REALLIB32)) and LIB64 ($(PREFIX)/$(LIB64) to $(REALLIB64)) are resolving to the same place. Manually specify LIB32 and LIB64. e.g. make PREFIX=$(PREFIX) LIB32=lib32 LIB64=lib64)
+-endif
+-endif
+-
+-endif
+-
+ HEADERDIR = $(PREFIX)/include
+ LIBDIR32 = $(PREFIX)/$(LIB32)
+ LIBDIR64 = $(PREFIX)/$(LIB64)
+@@ -211,7 +195,7 @@ export LIBDIR32
+ export LIBDIR64
+ export CUSTOM_LDSCRIPTS
+ 
+-all:	libs tests tools
++all:	libs tools tests
+ 
+ .PHONY:	tests libs
+ 
+-- 
+1.7.5.4
+

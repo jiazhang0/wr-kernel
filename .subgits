@@ -1,0 +1,17 @@
+[subgit "kernel-3.10.x"]
+	bare = true
+	clone-or-force-pull-only = true
+	path = git/kernel-3.10.x.git
+	url = ../../kernel-3.10.x
+
+[subgit "windriver-kernel-tools"]
+        bare = true
+        clone-or-force-pull-only = false
+        path = git/windriver-kernel-tools.git
+        url = ../../windriver-kernel-tools
+
+[subgit "downloads"]
+	bare = false
+	clone-or-force-pull-only = false
+	path = downloads
+	url = ../wr-kernel-dl

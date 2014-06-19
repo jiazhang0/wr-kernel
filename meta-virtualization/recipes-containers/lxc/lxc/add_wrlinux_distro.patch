@@ -1,0 +1,32 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -13,8 +13,8 @@ AC_GNU_SOURCE
+ 
+ # Detect the distribution. This is used for the default configuration and
+ # for some distro-specific build options.
+-AC_MSG_CHECKING([host distribution])
+-AC_ARG_WITH(distro, AS_HELP_STRING([--with-distro=DISTRO], [Specify the Linux distribution to target: One of redhat, oracle, fedora, suse, gentoo, debian, arch, slackware, paldo, mandriva or pardus.]))
++AC_MSG_CHECKING([distribution to build for])
++AC_ARG_WITH(distro, AS_HELP_STRING([--with-distro=DISTRO], [Specify the Linux distribution to target: One of redhat, oracle, fedora, suse, gentoo, debian, arch, slackware, paldo, mandriva, pardus or wrlinux.]))
+ if test "z$with_distro" = "z"; then
+ 	with_distro=`lsb_release -is`
+ fi
+@@ -41,15 +41,15 @@ case $with_distro in
+ 	ubuntu)
+ 		defaultconf=default.conf.ubuntu
+ 		;;
+-	redhat|fedora|oracle|oracleserver)
++	redhat|fedora|oracle|oracleserver|wrlinux)
+ 		defaultconf=default.conf.libvirt
+ 		;;
+ 	*)
+-		echo -n "Linux distribution network config unknown, defaulting to lxc.network.type = empty"
++		echo "Linux distribution network config unknown, defaulting to lxc.network.type = empty"
+ 		defaultconf=default.conf.unknown
+ 		;;
+ esac
+-AC_MSG_RESULT([$with_distro])
++AC_MSG_RESULT([distro is $with_distro])
+ AM_CONDITIONAL([HAVE_DEBIAN], [test x"$with_distro" = "xdebian" -o x"$with_distro" = "xubuntu"])
+ 
+ # Allow disabling rpath

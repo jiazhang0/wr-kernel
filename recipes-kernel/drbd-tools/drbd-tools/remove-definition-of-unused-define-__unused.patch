@@ -1,0 +1,36 @@
+From e133ab19d087c07e577819a0bc92ebbadbbce8b9 Mon Sep 17 00:00:00 2001
+From: Michel Thebeau <michel.thebeau@windriver.com>
+Date: Wed, 4 Dec 2013 13:30:03 -0500
+Subject: [PATCH] remove definition of unused #define __unused
+
+usr/include/sys/ucontext.h:100:24: error: expected identifier or '('
+before '[' token
+  unsigned long __unused[4];
+                        ^
+
+During multilib build the name "__unused" conflicts with this ucontext.h
+file in sysroot.  drbd uses the full "__attribute((unused))" throughout.
+
+Signed-off-by: Michel Thebeau <michel.thebeau@windriver.com>
+---
+ user/libgenl.h | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/user/libgenl.h b/user/libgenl.h
+index a37493a..77f7e1b 100644
+--- a/user/libgenl.h
++++ b/user/libgenl.h
+@@ -48,10 +48,6 @@ do {							\
+         type __min2 = (y);                      \
+         __min1 < __min2 ? __min1: __min2; })
+ 
+-#ifndef __unused
+-#define __unused __attribute((unused))
+-#endif
+-
+ #ifndef __read_mostly
+ #define __read_mostly
+ #endif
+-- 
+1.8.4.93.g57e4c17
+

@@ -1,0 +1,128 @@
+libhugetlbfs: libhugetlbfs: avoid search host library path for cross compilation
+
+Currently, all the hugepage linker scripts in libhugetlbfs include a
+SEARCH_DIR() directive, which is taken directly from the standard
+linker scripts upon which they were based.
+
+In fact the SEARCH_DIR() directives in the originals depend on the
+configuration of the binutils they came from. Most of the ones we
+have come from binutils configured as a system linker.
+
+This causes problems when attempting to use libhugetlbfs with a cross
+compiler - when linking with the hugepage scripts it will look for
+libraries in the system paths instead of the proper paths for the
+cross-libraries.
+
+If the SEARCH_DIR() directives are simply removed, the linker appears
+to use a sensible default list (alterable with -L), even when using a
+custom linker script instead of the defaults. Therefore, this patch
+does so.
+
+Remove SEARCH_DIR() directives from linker scripts fixed this issue.
+
+http://osdir.com/ml/lib.libhugetlbfs.devel/2007-08/msg00020.html
+
+Upstream-Status: Inappropriate [meta-oe specific]
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ ldscripts/elf32ppclinux.xB   | 1 -
+ ldscripts/elf32ppclinux.xBDT | 1 -
+ ldscripts/elf64ppc.xB        | 1 -
+ ldscripts/elf64ppc.xBDT      | 1 -
+ ldscripts/elf_i386.xB        | 1 -
+ ldscripts/elf_i386.xBDT      | 1 -
+ ldscripts/elf_x86_64.xB      | 1 -
+ ldscripts/elf_x86_64.xBDT    | 1 -
+ 8 files changed, 8 deletions(-)
+
+diff --git a/ldscripts/elf32ppclinux.xB b/ldscripts/elf32ppclinux.xB
+--- a/ldscripts/elf32ppclinux.xB
++++ b/ldscripts/elf32ppclinux.xB
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc",
+ 	      "elf32-powerpc")
+ OUTPUT_ARCH(powerpc:common)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/powerpc-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ PHDRS
+ {
+diff --git a/ldscripts/elf32ppclinux.xBDT b/ldscripts/elf32ppclinux.xBDT
+--- a/ldscripts/elf32ppclinux.xBDT
++++ b/ldscripts/elf32ppclinux.xBDT
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf32-powerpc", "elf32-powerpc",
+ 	      "elf32-powerpc")
+ OUTPUT_ARCH(powerpc:common)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/powerpc-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ PHDRS
+ {
+diff --git a/ldscripts/elf64ppc.xB b/ldscripts/elf64ppc.xB
+--- a/ldscripts/elf64ppc.xB
++++ b/ldscripts/elf64ppc.xB
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf64-powerpc", "elf64-powerpc",
+ 	      "elf64-powerpc")
+ OUTPUT_ARCH(powerpc:common64)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/powerpc64-linux-gnu/lib64"); SEARCH_DIR("/usr/local/lib64"); SEARCH_DIR("/lib64"); SEARCH_DIR("/usr/lib64"); SEARCH_DIR("/usr/powerpc64-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ PHDRS
+ {
+diff --git a/ldscripts/elf64ppc.xBDT b/ldscripts/elf64ppc.xBDT
+--- a/ldscripts/elf64ppc.xBDT
++++ b/ldscripts/elf64ppc.xBDT
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf64-powerpc", "elf64-powerpc",
+ 	      "elf64-powerpc")
+ OUTPUT_ARCH(powerpc:common64)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/powerpc64-linux-gnu/lib64"); SEARCH_DIR("/usr/local/lib64"); SEARCH_DIR("/lib64"); SEARCH_DIR("/usr/lib64"); SEARCH_DIR("/usr/powerpc64-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT( -lhugetlbfs );
+ PHDRS
+ {
+diff --git a/ldscripts/elf_i386.xB b/ldscripts/elf_i386.xB
+--- a/ldscripts/elf_i386.xB
++++ b/ldscripts/elf_i386.xB
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf32-i386", "elf32-i386",
+ 	      "elf32-i386")
+ OUTPUT_ARCH(i386)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/i486-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ /* Do we need any of these for elf?
+    __DYNAMIC = 0;    */
+diff --git a/ldscripts/elf_i386.xBDT b/ldscripts/elf_i386.xBDT
+--- a/ldscripts/elf_i386.xBDT
++++ b/ldscripts/elf_i386.xBDT
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf32-i386", "elf32-i386",
+ 	      "elf32-i386")
+ OUTPUT_ARCH(i386)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/i486-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ /* Do we need any of these for elf?
+    __DYNAMIC = 0;    */
+diff --git a/ldscripts/elf_x86_64.xB b/ldscripts/elf_x86_64.xB
+--- a/ldscripts/elf_x86_64.xB
++++ b/ldscripts/elf_x86_64.xB
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64",
+ 	      "elf64-x86-64")
+ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/x86_64-linux-gnu/lib64"); SEARCH_DIR("/usr/local/lib64"); SEARCH_DIR("/lib64"); SEARCH_DIR("/usr/lib64"); SEARCH_DIR("/usr/x86_64-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ /* Do we need any of these for elf?
+    __DYNAMIC = 0;    */
+diff --git a/ldscripts/elf_x86_64.xBDT b/ldscripts/elf_x86_64.xBDT
+--- a/ldscripts/elf_x86_64.xBDT
++++ b/ldscripts/elf_x86_64.xBDT
+@@ -3,7 +3,6 @@ OUTPUT_FORMAT("elf64-x86-64", "elf64-x86-64",
+ 	      "elf64-x86-64")
+ OUTPUT_ARCH(i386:x86-64)
+ ENTRY(_start)
+-SEARCH_DIR("/usr/x86_64-linux-gnu/lib64"); SEARCH_DIR("/usr/local/lib64"); SEARCH_DIR("/lib64"); SEARCH_DIR("/usr/lib64"); SEARCH_DIR("/usr/x86_64-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib");
+ INPUT(-lhugetlbfs);
+ /* Do we need any of these for elf?
+    __DYNAMIC = 0;    */
+-- 
+1.8.1.2
+

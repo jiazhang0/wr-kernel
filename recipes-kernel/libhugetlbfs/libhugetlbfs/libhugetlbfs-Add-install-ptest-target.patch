@@ -1,0 +1,26 @@
+From b1bc9f053356a9873ac8e3389382630c9907b6cf Mon Sep 17 00:00:00 2001
+From: Yang Shi <yang.shi@windriver.com>
+Date: Wed, 28 Aug 2013 14:10:45 -0700
+Subject: [PATCH 7/7] libhugetlbfs: Add install-ptest target
+
+Add install-ptest target, but it does nothing now. The test cases will be
+installed via do_install_ptest in bb file.
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ Makefile |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 68be309..c29a523 100644
+--- a/Makefile
++++ b/Makefile
+@@ -447,3 +447,5 @@ install-docs:
+ 
+ install-tests: tests install	# Force make to build tests and install the library first
+ 	$(MAKE) -C tests install
++
++install-ptest:  # Do nothing here
+-- 
+1.7.5.4
+

@@ -1,0 +1,28 @@
+From 1c42927d353c2875b7ac7c5c78fd14abc4faee2d Mon Sep 17 00:00:00 2001
+From: Yang Shi <yang.shi@windriver.com>
+Date: Wed, 28 Aug 2013 14:26:47 -0700
+Subject: [PATCH] libhugetlbfs: Fix hugeadm path in run_tests.py
+
+hugeadm is install in /usr/bin rather than "../obj".
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ tests/run_tests.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tests/run_tests.py b/tests/run_tests.py
+index c060699..9da9927 100755
+--- a/tests/run_tests.py
++++ b/tests/run_tests.py
+@@ -234,7 +234,7 @@ def get_pagesizes():
+     """
+     sizes = set()
+     out = ""
+-    (rc, out) = bash("../obj/hugeadm --page-sizes")
++    (rc, out) = bash("hugeadm --page-sizes")
+     if rc != 0 or out == "": return sizes
+ 
+     for size in out.split("\n"): sizes.add(int(size))
+-- 
+1.7.5.4
+

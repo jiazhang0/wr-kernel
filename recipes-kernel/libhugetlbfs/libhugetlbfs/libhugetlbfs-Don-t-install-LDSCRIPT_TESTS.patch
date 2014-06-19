@@ -1,0 +1,51 @@
+libhugetlbfs: Don't install LDSCRIPT_TESTS and xB-HUGELINK_TESTS
+
+Since LDSCRIPT_TESTS case and xB-HUGELINK_TESTS case caused WR toolchain's
+prelink segment fault which was invoked at image's do_rootfs time.
+...
+PSEUDO_ALLOW_FSYNC=1 bitbake_build/tmp/sysroots/x86_64-linux/usr/sbin/prelink \
+  --root bitbake_build/tmp/work/qemux86_64-wrs-linux/wrlinux-image-glibc-std/1.0-r5/rootfs \
+   -amvR -N -c /etc/prelink.conf
+..
+Prelinking /usr/lib64/libhugetlbfs/ptest/tests/obj64/zero_filesize_segment
+Segmentation fault (core dumped)
+...
+
+So don't install it to workaround this issue.
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+Signed-off-by: Hongxu Jia <hongxu.jia@windriver.com>
+---
+ tests/Makefile | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/tests/Makefile b/tests/Makefile
+--- a/tests/Makefile
++++ b/tests/Makefile
+@@ -42,19 +42,19 @@ INSTALL = install
+ TESTS = $(LIB_TESTS) $(NOLIB_TESTS) $(STRESS_TESTS) dummy.ldscript
+ ifdef ELF32
+ ifeq ($(CUSTOM_LDSCRIPTS),yes)
+-TESTS += $(LDSCRIPT_TESTS) $(HUGELINK_TESTS) $(HUGELINK_TESTS:%=xB.%) \
++TESTS += $(HUGELINK_TESTS) $(HUGELINK_TESTS:%=xB.%) \
+ 	$(HUGELINK_TESTS:%=xBDT.%) $(HUGELINK_RW_TESTS)
+ else
+-TESTS += $(LDSCRIPT_TESTS) $(HUGELINK_TESTS) $(HUGELINK_RW_TESTS)
++TESTS += $(HUGELINK_TESTS) $(HUGELINK_RW_TESTS)
+ endif
+ 
+ else
+ ifdef ELF64
+ ifeq ($(CUSTOM_LDSCRIPTS),yes)
+-TESTS += $(LDSCRIPT_TESTS) $(HUGELINK_TESTS) $(HUGELINK_TESTS:%=xB.%) \
++TESTS += $(HUGELINK_TESTS) \
+ 	$(HUGELINK_TESTS:%=xBDT.%)
+ else
+-TESTS += $(LDSCRIPT_TESTS) $(HUGELINK_TESTS)
++TESTS += $(HUGELINK_TESTS)
+ endif
+ 
+ endif
+-- 
+1.8.1.2
+

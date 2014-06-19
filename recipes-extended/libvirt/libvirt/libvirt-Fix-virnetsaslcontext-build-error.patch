@@ -1,0 +1,27 @@
+From 335760aa672f6f3c17093b4da51373cc737dd50a Mon Sep 17 00:00:00 2001
+From: Yang Shi <yang.shi@windriver.com>
+Date: Tue, 22 Oct 2013 13:25:25 -0700
+Subject: [PATCH] libvirt: Fix virnetsaslcontext build error
+
+sasl.in uses "size_t" type, so include stddef.h in virnetsaslcontext.
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ src/rpc/virnetsaslcontext.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/rpc/virnetsaslcontext.h b/rpc/virnetsaslcontext.h
+index e726302..4567179 100644
+--- a/src/rpc/virnetsaslcontext.h
++++ b/src/rpc/virnetsaslcontext.h
+@@ -21,6 +21,7 @@
+ #ifndef __VIR_NET_CLIENT_SASL_CONTEXT_H__
+ # define __VIR_NET_CLIENT_SASL_CONTEXT_H__
+ 
++# include <stddef.h>
+ # include <sasl/sasl.h>
+ 
+ # include "internal.h"
+-- 
+1.7.5.4
+

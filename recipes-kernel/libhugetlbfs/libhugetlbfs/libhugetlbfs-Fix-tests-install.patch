@@ -1,0 +1,39 @@
+From b49f8dd55c620dc55beab9af3c6c893f215eb2fd Mon Sep 17 00:00:00 2001
+From: Yang Shi <yang.shi@windriver.com>
+Date: Wed, 28 Aug 2013 09:40:42 -0700
+Subject: [PATCH 5/5] libhugetlbfs: Fix tests install
+
+Skip tests rebuild since they are already in build target. And, remove TESTS_64
+install since it is empty and will cause tests install failure.
+
+Signed-off-by: Yang Shi <yang.shi@windriver.com>
+---
+ Makefile       |    2 +-
+ tests/Makefile |    1 -
+ 2 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 9e21171..68be309 100644
+--- a/Makefile
++++ b/Makefile
+@@ -446,4 +446,4 @@ install-docs:
+ 	for x in $(EXTRA_DIST); do $(INSTALL) -m 755 $$x $(DESTDIR)$(DOCDIR)/$$x; done
+ 
+ install-tests: tests install	# Force make to build tests and install the library first
+-	${MAKE} -C tests install DESTDIR=$(DESTDIR) OBJDIRS="$(OBJDIRS)" LIB32=$(LIB32) LIB64=$(LIB64)
++	$(MAKE) -C tests install
+diff --git a/tests/Makefile b/tests/Makefile
+index 231e3b0..fae62ed 100644
+--- a/tests/Makefile
++++ b/tests/Makefile
+@@ -292,7 +292,6 @@ obj64/install:
+ 	$(INSTALL) -m 755 wrapper-utils.sh $(DESTDIR)$(INST_TESTSDIR64)/obj64
+ 	$(INSTALL) -m 755 $(HELPERS:%=obj64/%) $(DESTDIR)$(INST_TESTSDIR64)/obj64
+ 	$(INSTALL) -m 755 $(HELPER_LIBS:%=obj64/%) $(DESTDIR)$(INST_TESTSDIR64)/obj64
+-	$(INSTALL) -m 755 $(TESTS_64:%=obj64/%) $(DESTDIR)$(INST_TESTSDIR64)/obj64
+ 	$(INSTALL) -m 755 run_tests.py $(DESTDIR)$(INST_TESTSDIR64)
+ 
+ install: $(OBJDIRS:%=%/install)
+-- 
+1.7.5.4
+
