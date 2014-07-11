@@ -1,3 +1,2 @@
 IMAGE_INSTALL += "${VIRTUAL-RUNTIME_kdump_tools}"
-IMAGE_INSTALL += "makedumpfile"
 IMAGE_INSTALL += " ${VIRTUAL-RUNTIME_crash}"
