@@ -1,4 +1,4 @@
-#The file is based on SDK1.4
+#The file is based on SDK1.6
 
 DESCRIPTION = "Reset Control Words (RCW)"
 SECTION = "rcw"
@@ -13,9 +13,10 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit deploy
 
-SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git\
+BR="sdk-v1.6.x"
+SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;branch=$BR;protocol=git \
 	file://0001-fsl_e500mc-Add-RCW-of-P2041-for-SRIO.patch"
-SRCREV = "5d3c819bcca6d09dcf7b52b3f2855dda304a5997"
+SRCREV = "261b2355e9936ecb37b61e6f58dfc48dcfb805b3"
 
 COMPATIBLE_MACHINE = "(fsl-e500mc|fsl-p50xx|fsl-t4xxx|fsl-b4xxx)"
 
