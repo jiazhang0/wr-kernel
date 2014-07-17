@@ -1,9 +1,10 @@
 #
 # Copyright (C) 2013 Wind River Systems, Inc.
 #
-DESCRIPTION = "A toolkit to interact with the virtualization capabilities of recent versions of Linux." 
+DESCRIPTION = "A toolkit to interact with the virtualization capabilities of recent versions of Linux."
 HOMEPAGE = "http://libvirt.org"
-LICENSE = "GPLv2+"
+LICENSE = "LGPLv2.1+"
+LICENSE_${PN}-ptest = "GPLv2+ & LGPLv2.1"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
                     file://COPYING.LESSER;md5=4fbd65380cdd255951079008b364516c"
 SECTION = "console/tools"
@@ -33,10 +34,11 @@ SRC_URI = "http://libvirt.org/sources/libvirt-${PV}.tar.gz;name=libvirt \
            file://libvirtd.conf \
            file://runptest.patch \
            file://run-ptest \
+           file://tests-allow-separated-src-and-build-dirs.patch \
           "
 
-SRC_URI[libvirt.md5sum] = "592958ad1ddce7574d8cb0a31e635acd"
-SRC_URI[libvirt.sha256sum] = "a48377e307c5c21b67e43db99af909a23c33aff8cbbaa3361fd389eb047cbbc3"
+SRC_URI[libvirt.md5sum] = "da7a9ca519df45a460659189fe0024e6"
+SRC_URI[libvirt.sha256sum] = "e43ac5f6b2baeafcd01777be03a897e636f8d48c0cdfb4c4cbb80d45faa9e875"
 
 inherit autotools-brokensep gettext update-rc.d pkgconfig ptest
 
@@ -139,9 +141,11 @@ PRIVATE_LIBS_${PN}-ptest = " \
 #PACKAGECONFIG ??= "xen libxl xen-inotify test remote libvirtd"
 
 # full config
-PACKAGECONFIG ??= "qemu yajl xen libxl xen-inotify uml openvz vmware vbox esx \
-                   polkit lxc test remote macvtap libvirtd netcf udev python ebtables \
-                   {@base_contains('DISTRO_FEATURES', 'selinux', 'selinux', '', d)} \
+PACKAGECONFIG ??= "qemu yajl uml openvz vmware vbox esx iproute2 lxc test \
+                   remote macvtap libvirtd netcf udev python ebtables \
+                   ${@base_contains('DISTRO_FEATURES', 'selinux', 'selinux', '', d)} \
+                   ${@base_contains('DISTRO_FEATURES', 'xen', 'xen libxl xen-inotify', '', d)} \
+                   ${@base_contains('DISTRO_FEATURES', 'x11', 'polkit', '', d)} \
                   "
 
 # enable,disable,depends,rdepends
@@ -171,6 +175,10 @@ PACKAGECONFIG[udev] = "--with-udev --with-pciaccess,--without-udev,udev libpciac
 PACKAGECONFIG[selinux] = "--with-selinux,--without-selinux,libselinux,"
 PACKAGECONFIG[ebtables] = "ac_cv_path_EBTABLES_PATH=/sbin/ebtables,ac_cv_path_EBTABLES_PATH=,ebtables,ebtables"
 PACKAGECONFIG[python] = "--with-python,--without-python,python,"
+PACKAGECONFIG[sasl] = "--with-sasl,--without-sasl,cyrus-sasl,cyrus-sasl"
+PACKAGECONFIG[iproute2] = "ac_cv_path_IP_PATH=/sbin/ip,ac_cv_path_IP_PATH=,iproute2,iproute2"
+PACKAGECONFIG[numactl] = "--with-numactl,--without-numactl,numactl,"
+PACKAGECONFIG[fuse] = "--with-fuse,--without-fuse,fuse,"
 
 # Enable the Python tool support
 require libvirt-python.inc
