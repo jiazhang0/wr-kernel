@@ -1,7 +1,7 @@
 #
-# Copyright (C) 2013 Wind River Systems, Inc.
+# Copyright (C) 2014 Wind River Systems, Inc.
 #
-# This bb and tarball are copied from fsl sdk 1.4
+# This bb and tarball are copied from fsl sdk 1.6
 DESCRIPTION = "QorIQ Debug File System Module"
 SECTION = "qoriq-debug"
 LICENSE = "GPL"
@@ -19,9 +19,10 @@ INSANE_SKIP_${PN} = "arch"
 
 inherit module autotools-brokensep
 
-# This commit is head of SDK 1.4
-SRC_URI = "git://git.freescale.com/ppc/sdk/qoriq-debug.git;branch=sdk-v1.4.x;protocol=git"
-SRCREV = "08de2902af9a79ba9e436a284b8d7754b351f608"
+# This commit is head of SDK 1.6
+BR="sdk-v1.6.x"
+SRC_URI = "git://git.freescale.com/ppc/sdk/qoriq-debug.git;branch=$BR;protocol=git"
+SRCREV = "e1fda85d9c004686e37d933c65a38e0103cb2874"
 
 S = "${WORKDIR}/git"
 
