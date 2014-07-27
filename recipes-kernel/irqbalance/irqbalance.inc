@@ -23,6 +23,7 @@ INITSCRIPT_PARAMS = "defaults"
 
 inherit autotools
 inherit update-rc.d
+inherit pkgconfig
 
 EXTRA_OECONF = "--program-transform-name= \
 	       "
