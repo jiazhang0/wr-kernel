@@ -34,7 +34,7 @@ TARGET_RAW_PREFIX ?= "${TARGET_PREFIX}"
 HOST_PREFIX_pn-linux-windriver = "${TARGET_RAW_PREFIX}"
 CROSS_COMPILE_pn-linux-windriver = "${TARGET_RAW_PREFIX}"
 
-FILESEXTRAPATHS := ":${EXTRA_KERNEL_FILES}:"
+FILESEXTRAPATHS_prepend := "${EXTRA_KERNEL_FILES}:"
 
 # The following enables extra variable overrides within kernel recipes and
 # bbappends
