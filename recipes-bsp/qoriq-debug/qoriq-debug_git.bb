@@ -4,9 +4,9 @@
 # This bb and tarball are copied from fsl sdk 1.6
 DESCRIPTION = "QorIQ Debug File System Module"
 SECTION = "qoriq-debug"
-LICENSE = "GPL"
+LICENSE = "GPL-2.0"
 PR = "r4"
-LIC_FILES_CHKSUM = "file://COPYING;md5=e29234dd5d40dc352cc60cc0c93437ba"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
 
 COMPATIBLE_HOST = 'powerpc.*-linux'
 
