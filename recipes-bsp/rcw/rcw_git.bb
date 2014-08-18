@@ -18,13 +18,14 @@ SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;branch=$BR;protocol=git \
 	file://0001-fsl_e500mc-Add-RCW-of-P2041-for-SRIO.patch"
 SRCREV = "261b2355e9936ecb37b61e6f58dfc48dcfb805b3"
 
-COMPATIBLE_MACHINE = "(fsl-e500mc|fsl-p50xx|fsl-t4xxx|fsl-b4xxx)"
+COMPATIBLE_MACHINE = "(fsl-e500mc|fsl-p50xx|fsl-t4xxx|fsl-b4xxx|fsl-t2xxx)"
 
 S = "${WORKDIR}/git"
 M_fsl-t4xxx="t4240qds"
 M_fsl-e500mc="p2041rdb p3041ds p4080ds"
 M_fsl-p50xx="p5040ds p5020ds"
 M_fsl-b4xxx="b4860qds b4420qds"
+M_fsl-t2xxx="t2080qds t2080rdb"
 
 do_install () {
 	make install
