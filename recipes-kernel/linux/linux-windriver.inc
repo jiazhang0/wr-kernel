@@ -101,3 +101,14 @@ do_install_kernel_headers() {
 }
 
 addtask install_kernel_headers before do_populate_sysroot after do_install
+
+do_kernel_config_externalsrc() {
+	if [ "${EXTERNALSRC}" != "" ]; then
+		cd ${S}
+		oe_runmake O=${B} \
+		    KBUILD_DEFCONFIG=defconfig \
+		    defconfig > ${B}/config.log 2>&1
+	fi
+}
+
+addtask kernel_config_externalsrc after do_patch before do_configure
