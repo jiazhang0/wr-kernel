@@ -37,8 +37,7 @@ COMPATIBLE_HOST = '(x86_64.*|i.86.*|arm.*|powerpc.*|mips.*)-linux'
 
 inherit autotools-brokensep
 
-EXTRA_OECONF_append = " --with-linuxdir=${STAGING_KERNEL_DIR} \
-                        --disable-doc \
+EXTRA_OECONF_append = " --disable-doc \
                         --disable-rpath \
                         --with-distro=wrlinux \
                         --disable-examples \
