@@ -31,6 +31,7 @@ SRC_URI = "http://openvswitch.org/releases/openvswitch-${PV}.tar.gz \
 	file://openvswitch-add-target-python-handling.patch \
 	file://openvswitch-add-target-perl-handling.patch \
 	file://openvswitch-add-more-target-python-substitutions.patch \
+	file://openvswitch-ovsdb-automake-mkdir-ovsdb.patch \
 	file://openvswitch-add-ptest.patch \
 	file://run-ptest \
 	"
