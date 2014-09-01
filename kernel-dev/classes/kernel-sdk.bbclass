@@ -28,10 +28,10 @@ python kernel_sdkpostprocess () {
         cmd = d.expand(makecmd % kernel_src_base )
         ret, result = commands.getstatusoutput("%s" % cmd)
         bb.note( "%s" % result )
-	repack_sdk = 1
+        repack_sdk = 1
 
     if repack_sdk:
-	bb.build.exec_func('tar_sdk', d)
+        bb.build.exec_func('tar_sdk', d)
         bb.build.exec_func('create_shar', d)
 
     bb.note( "kernel SDK: done" )
