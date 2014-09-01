@@ -114,40 +114,31 @@ do_kernel_config_externalsrc() {
 
 addtask kernel_config_externalsrc after do_patch before do_configure
 
-EXTRACTDIR ??= ""
+EXTRACTDIR ??= "${DEPLOYDIR}/kernel_extract"
 
-# Set EXTRACTDIR
-python () {
-    extractdir = d.getVar('KERNEL_EXTRACTDIR', True)
-    if extractdir:
-        d.setVar('EXTRACTDIR', extractdir)
-    else:
-        # Default kernel extract dir
-        d.setVar('EXTRACTDIR', '${D}/kernel_extract')
-}
+do_extract_kernel_output[dirs] = "${EXTRACTDIR} ${B}"
 
 #
 # Extract kernel build output without install, deploy and package
 #
-
 do_extract_kernel_output() {
-	mkdir -p ${EXTRACTDIR}
-
 	# Extract kernel image
 	install -m 0644 ${KERNEL_OUTPUT} ${EXTRACTDIR}
 
 	# Extract kernel modules and tar them together
+	unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
 	if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
-		oe_runmake DEPMOD=echo INSTALL_MOD_PATH="${D}" modules_install
-		rm "${D}/lib/modules/${KERNEL_VERSION}/build"
-		rm "${D}/lib/modules/${KERNEL_VERSION}/source"
+		oe_runmake DEPMOD=echo INSTALL_MOD_PATH="${EXTRACTDIR}" modules_install
+		rm "${EXTRACTDIR}/lib/modules/${KERNEL_VERSION}/build"
+		rm "${EXTRACTDIR}/lib/modules/${KERNEL_VERSION}/source"
 		# If the kernel/ directory is empty remove it to prevent QA issues
 		rmdir --ignore-fail-on-non-empty "${D}/lib/modules/${KERNEL_VERSION}/kernel"
-		tar -cvzf ${EXTRACTDIR}/${MODULE_TARBALL_BASE_NAME} ${D}/lib
+		tar -cvzf ${EXTRACTDIR}/${MODULE_TARBALL_BASE_NAME} -C ${EXTRACTDIR} lib
+		rm -rf "${EXTRACTDIR}/lib"
 	else
 		bbnote "no modules to extract"
 	fi
 }
 
 # This is a standalone task
-addtask extract_kernel_output
+addtask extract_kernel_output after do_compile_kernelmodules
