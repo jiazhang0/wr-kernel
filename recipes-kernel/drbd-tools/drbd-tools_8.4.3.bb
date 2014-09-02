@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 Wind River Systems, Inc.
+# Copyright (C) 2013 - 2014 Wind River Systems, Inc.
 #
 SUMMARY = "Distributed Replicated Block Device (DRBD) tools"
 
@@ -29,7 +29,7 @@ GROUPADD_PARAM_${PN} = "--system haclient"
 
 S = "${WORKDIR}/git"
 
-RDEPENDS_${PN} += "perl-module-strict perl-module-warnings"
+RDEPENDS_${PN} += "perl-module-strict perl-module-warnings bash"
 
 EXTRA_OECONF = " \
     --libdir=${libdir} \
