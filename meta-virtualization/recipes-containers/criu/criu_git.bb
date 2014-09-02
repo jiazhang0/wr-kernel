@@ -9,6 +9,8 @@ HOMEPAGE = "http://criu.org"
 SECTION = "console/tools"
 LICENSE = "GPLv2"
 
+EXCLUDE_FROM_WORLD = "1"
+
 LIC_FILES_CHKSUM = "file://COPYING;md5=5cc804625b8b491b6b4312f0c9cb5efa"
 
 SRCREV = "7edf0994c9678753fad7122de7fc11c85421b931"
@@ -41,10 +43,6 @@ CFLAGS += "-D__USE_GNU -D_GNU_SOURCE"
 
 # overide LDFLAGS to allow criu to build without: "x86_64-poky-linux-ld: unrecognized option '-Wl,-O1'"
 export LDFLAGS=""
-
-python () {
-    bb.warn("The CRIU package just can be built for x86-64, ARMv6 and ARMv7 target")
-}
 
 do_compile () {
 	oe_runmake
