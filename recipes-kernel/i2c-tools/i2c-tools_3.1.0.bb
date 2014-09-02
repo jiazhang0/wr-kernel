@@ -40,6 +40,7 @@ SRC_URI[md5sum] = "f15019e559e378c6e9d5d6299a00df21"
 SRC_URI[sha256sum] = "960023f61de292c6dd757fcedec4bffa7dd036e8594e24b26a706094ca4c142a"
 
 PACKAGES =+ "${PN}-misc"
+RDEPENDS_${PN}-misc += "perl"
 FILES_${PN}-misc = "${sbindir}/i2c-stub-from-dump \
                         ${bindir}/ddcmon \
                         ${bindir}/decode-edid \
