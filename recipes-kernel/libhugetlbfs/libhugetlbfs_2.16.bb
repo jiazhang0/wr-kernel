@@ -67,7 +67,11 @@ do_install_ptest() {
 
 FILES_${PN} += "${libdir}/libhugetlbfs.so ${libdir}/libhugetlbfs_privutils.so"
 
-FILES_${PN}-dev = "${includedir}/*.h"
+FILES_${PN}-dev = "${includedir}/*.h ${datadir}/${BPN}/ld.hugetlbfs \
+		${datadir}/${BPN}/ld ${datadir}/${BPN}/ldscripts/* \
+		"
+
+RDEPENDS_${PN}-dev += "bash"
 
 FILES_${PN}-dbg += "${libdir}/libhugetlbfs/tests/obj64/.debug ${libdir}/libhugetlbfs/tests/obj32/.debug"
 
