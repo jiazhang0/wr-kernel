@@ -19,7 +19,7 @@ S = "${WORKDIR}/git"
 # Source is the HEAD of aleph1-release-branch at the time of writing this recipe
 SRC_URI = "git://www.aleph1.co.uk/yaffs2;protocol=git \
           "
-SRCREV = "bc76682d93955cfb33051beb503ad9f8a5450578"
+SRCREV = "7e5cf0fa1b694f835cdc184a8395b229fa29f9ae"
 
 LIC_FILES_CHKSUM = "file://utils/mkyaffs2image.c;beginline=12;endline=14;md5=5f5464f9b3e981ca574e65b00e438561"
 
