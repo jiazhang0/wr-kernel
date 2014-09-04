@@ -18,12 +18,13 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=94d55d512a9ba36caa9b7df079bae19f \
 
 DEPENDS = "glib-2.0"
 
+inherit autotools update-rc.d pkgconfig systemd
+
 INITSCRIPT_NAME = "irqbalanced"
 INITSCRIPT_PARAMS = "defaults"
 
-inherit autotools
-inherit update-rc.d
-inherit pkgconfig
+SYSTEMD_PACKAGES = "irqbalance"
+SYSTEMD_SERVICE_irqbalance = "irqbalanced.service"
 
 EXTRA_OECONF = "--program-transform-name= \
 	       "
@@ -42,4 +43,8 @@ do_install () {
         install -d ${D}${sysconfdir}/init.d
         cat ${S}/irqbalance.init | sed -e's,/usr/sbin,${sbindir},g' > ${D}${sysconfdir}/init.d/irqbalanced
         chmod 755 ${D}${sysconfdir}/init.d/irqbalanced
+
+	install -d ${D}${systemd_unitdir}/system
+	install -m 0644 ${WORKDIR}/irqbalanced.service ${D}${systemd_unitdir}/system
+	sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/irqbalanced.service
 }
