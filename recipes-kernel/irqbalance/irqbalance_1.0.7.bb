@@ -6,10 +6,10 @@ require irqbalance.inc
 
 PR = "r1"
 
-SRC_URI[md5sum] = "b73b1a5a9e1c3c428ae39024c711e41e"
-SRC_URI[sha256sum] = "95ac79992e6de501f613c781b0fc8aa17a4aaf6a3d865bb6e15ac6a46c6ab1fd"
+SRC_URI[md5sum] = "09cb0ab81ab4f3401a7ff5dabc158a1e"
+SRC_URI[sha256sum] = "fed1bb405654be8eda40961667bbe75033667600d828b34419c25a1282e81127"
 
-SRC_URI = "http://irqbalance.googlecode.com/files/irqbalance-${PV}.tar.gz \
+SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/irqbalance/irqbalance-1.0.7.tar.bz2/09cb0ab81ab4f3401a7ff5dabc158a1e/irqbalance-1.0.7.tar.bz2 \
            file://add-initscript.patch \
            file://irqbalance-Add-status-and-reload-commands.patch \
            file://fix-configure-libcap-ng.patch \
