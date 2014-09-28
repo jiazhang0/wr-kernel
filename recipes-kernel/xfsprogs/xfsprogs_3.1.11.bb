@@ -16,6 +16,7 @@ DEPENDS = "util-linux"
 SRC_URI = "ftp://oss.sgi.com/projects/xfs/cmd_tars/${BP}.tar.gz \
     file://remove-install-as-user.patch \
     file://drop-configure-check-for-aio.patch \
+    file://add-macros-max-min.patch \
 "
 
 SRC_URI[md5sum] = "de9f1f45026c2f4e0776058d429ff4b6"

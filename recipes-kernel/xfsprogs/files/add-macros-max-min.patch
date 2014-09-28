@@ -1,0 +1,18 @@
+Backport macros definitions.
+
+Upstream-Status: Backport
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+--- xfsprogs-3.1.11/include/platform_defs.h.in.orig	2014-09-28 10:14:23.603428124 +0800
++++ xfsprogs-3.1.11/include/platform_defs.h.in	2014-09-28 10:14:39.671428562 +0800
+@@ -163,4 +163,9 @@
+ #define __arch_pack
+ #endif
+ 
++#ifndef min
++#define min(a,b)        (((a)<(b))?(a):(b))
++#define max(a,b)        (((a)>(b))?(a):(b))
++#endif
++
+ #endif	/* __XFS_PLATFORM_DEFS_H__ */

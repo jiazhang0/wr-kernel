@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 Wind River Systems, Inc.
+# Copyright (C) 2014 Wind River Systems, Inc.
 #
 SUMMARY = "XFS Filesystem Dump Utility"
 
@@ -14,11 +14,10 @@ HOMEPAGE = "http://oss.sgi.com/projects/xfs"
 LICENSE = "GPLv2"
 SECTION = "base"
 DEPENDS = "xfsprogs attr"
-PR = "r0"
 
 SRC_URI = "ftp://oss.sgi.com/projects/xfs/cmd_tars/${BP}.tar.gz"
-SRC_URI[md5sum] = "aad7160b88db24c0510c001debd689be"
-SRC_URI[sha256sum] = "f02138a5d96e06c506ac8cb6e4fedeb0bf7d7cf8b9747f262d0735b885dbf8fa"
+SRC_URI[md5sum] = "a8b1761be5feb363131e7b506639ad4c"
+SRC_URI[sha256sum] = "570eafd0721515bdd79cb0e295b701d49cdf81e71a0a0ff0df6d4c5cc1960943"
 
 LIC_FILES_CHKSUM = "file://doc/COPYING;md5=15c832894d10ddd00dfcf57bee490ecc \
                     file://common/main.c;beginline=5;endline=16;md5=0f014348ec9a22b0e1bb7fa8a7d17611 \
