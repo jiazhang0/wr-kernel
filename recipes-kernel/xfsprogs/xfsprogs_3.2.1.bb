@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 Wind River Systems, Inc.
+# Copyright (C) 2013 - 2014 Wind River Systems, Inc.
 #
 
 #The recipe and patches are taken from
@@ -14,13 +14,13 @@ LIC_FILES_CHKSUM = "file://doc/COPYING;md5=dbdb5f4329b7e7145de650e9ecd4ac2a"
 DEPENDS = "util-linux"
 
 SRC_URI = "ftp://oss.sgi.com/projects/xfs/cmd_tars/${BP}.tar.gz \
+    file://0001-xfsprogs-generate-crctable-which-is-moved-into-runti.patch \
     file://remove-install-as-user.patch \
     file://drop-configure-check-for-aio.patch \
-    file://add-macros-max-min.patch \
 "
 
-SRC_URI[md5sum] = "de9f1f45026c2f4e0776058d429ff4b6"
-SRC_URI[sha256sum] = "adf4980177b5c890c1ca86b9c0e3e4d69a3f95bfc01746844280c2393cf4d6be"
+SRC_URI[md5sum] = "5c6905932029c8f9207fe5a0a8aac24b"
+SRC_URI[sha256sum] = "83f8ea4c38fe9f42b9f12cd523519287a9695f2cf4f3064e9e9a839f71185767"
 
 inherit autotools-brokensep
 
