@@ -1,109 +1,112 @@
-From 0d616496e04413b3f4f6a9c14dc6754c5a4f03ae Mon Sep 17 00:00:00 2001
-From: Yang Shi <yang.shi@windriver.com>
-Date: Wed, 10 Jul 2013 17:19:10 -0700
-Subject: [PATCH] lxc: Add template script for WRLinux
+From 532ade614505705fcb11c1dc3db8993e1ad6b7bc Mon Sep 17 00:00:00 2001
+From: Jianchuan Wang <jianchuan.wang@windriver.com>
+Date: Tue, 30 Sep 2014 13:48:44 +0800
+Subject: [PATCH 1/2] lxc: Add template script for WRLinux
 
 CQID: WIND00425572
 
 LXC container configuration script for WRLinux
 
+Adjust this patch (0.9.0) for new version 1.0.5.
+
 Signed-off-by: Yang Shi <yang.shi@windriver.com>
+Signed-off-by: Jianchuan Wang <jianchuan.wang@windriver.com>
 ---
- configure                |    3 +-
- configure.ac             |    1 +
- templates/Makefile.am    |    3 +-
- templates/Makefile.in    |    9 ++-
- templates/lxc-wrlinux.in |  181 ++++++++++++++++++++++++++++++++++++++++++++++
+ configure                |   3 +-
+ configure.ac             |   1 +
+ templates/Makefile.am    |   3 +-
+ templates/Makefile.in    |   9 ++-
+ templates/lxc-wrlinux.in | 181 +++++++++++++++++++++++++++++++++++++++++++++++
  5 files changed, 192 insertions(+), 5 deletions(-)
- create mode 100755 templates/lxc-wrlinux.in
+ create mode 100644 templates/lxc-wrlinux.in
 
 diff --git a/configure b/configure
-index 89bacd9..0433568 100755
+index 85804ba..14a81a6 100755
 --- a/configure
 +++ b/configure
-@@ -6753,7 +6753,7 @@ if test "x$GCC" = "xyes"; then
+@@ -9122,7 +9122,7 @@ if test "x$GCC" = "xyes"; then
  fi
  
  # Files requiring some variable expansion
--ac_config_files="$ac_config_files Makefile lxc.pc lxc.spec config/Makefile doc/Makefile doc/legacy/lxc-ls.sgml doc/lxc-attach.sgml doc/lxc-cgroup.sgml doc/lxc-checkconfig.sgml doc/lxc-checkpoint.sgml doc/lxc-clone.sgml doc/lxc-console.sgml doc/lxc-create.sgml doc/lxc-destroy.sgml doc/lxc-device.sgml doc/lxc-execute.sgml doc/lxc-freeze.sgml doc/lxc-info.sgml doc/lxc-kill.sgml doc/lxc-ls.sgml doc/lxc-monitor.sgml doc/lxc-netstat.sgml doc/lxc-ps.sgml doc/lxc-restart.sgml doc/lxc-shutdown.sgml doc/lxc-start-ephemeral.sgml doc/lxc-start.sgml doc/lxc-stop.sgml doc/lxc-top.sgml doc/lxc-unfreeze.sgml doc/lxc-unshare.sgml doc/lxc-version.sgml doc/lxc-wait.sgml doc/lxc.conf.sgml doc/lxc.sgml doc/common_options.sgml doc/see_also.sgml doc/rootfs/Makefile doc/examples/Makefile doc/examples/lxc-macvlan.conf doc/examples/lxc-vlan.conf doc/examples/lxc-no-netns.conf doc/examples/lxc-empty-netns.conf doc/examples/lxc-phys.conf doc/examples/lxc-veth.conf doc/examples/lxc-complex.conf hooks/Makefile templates/Makefile templates/lxc-debian templates/lxc-ubuntu templates/lxc-ubuntu-cloud templates/lxc-opensuse templates/lxc-busybox templates/lxc-fedora templates/lxc-oracle templates/lxc-altlinux templates/lxc-sshd templates/lxc-archlinux templates/lxc-alpine src/Makefile src/lxc/Makefile src/lxc/lxc-ps src/lxc/lxc-netstat src/lxc/lxc-checkconfig src/lxc/lxc-version src/lxc/lxc-create src/lxc/lxc-clone src/lxc/lxc-shutdown src/lxc/lxc-start-ephemeral src/lxc/lxc-destroy src/lxc/legacy/lxc-ls src/lxc/lxc.functions src/python-lxc/Makefile src/lua-lxc/Makefile src/tests/Makefile"
-+ac_config_files="$ac_config_files Makefile lxc.pc lxc.spec config/Makefile doc/Makefile doc/legacy/lxc-ls.sgml doc/lxc-attach.sgml doc/lxc-cgroup.sgml doc/lxc-checkconfig.sgml doc/lxc-checkpoint.sgml doc/lxc-clone.sgml doc/lxc-console.sgml doc/lxc-create.sgml doc/lxc-destroy.sgml doc/lxc-device.sgml doc/lxc-execute.sgml doc/lxc-freeze.sgml doc/lxc-info.sgml doc/lxc-kill.sgml doc/lxc-ls.sgml doc/lxc-monitor.sgml doc/lxc-netstat.sgml doc/lxc-ps.sgml doc/lxc-restart.sgml doc/lxc-shutdown.sgml doc/lxc-start-ephemeral.sgml doc/lxc-start.sgml doc/lxc-stop.sgml doc/lxc-top.sgml doc/lxc-unfreeze.sgml doc/lxc-unshare.sgml doc/lxc-version.sgml doc/lxc-wait.sgml doc/lxc.conf.sgml doc/lxc.sgml doc/common_options.sgml doc/see_also.sgml doc/rootfs/Makefile doc/examples/Makefile doc/examples/lxc-macvlan.conf doc/examples/lxc-vlan.conf doc/examples/lxc-no-netns.conf doc/examples/lxc-empty-netns.conf doc/examples/lxc-phys.conf doc/examples/lxc-veth.conf doc/examples/lxc-complex.conf hooks/Makefile templates/Makefile templates/lxc-debian templates/lxc-ubuntu templates/lxc-ubuntu-cloud templates/lxc-opensuse templates/lxc-busybox templates/lxc-fedora templates/lxc-oracle templates/lxc-altlinux templates/lxc-sshd templates/lxc-archlinux templates/lxc-alpine templates/lxc-wrlinux src/Makefile src/lxc/Makefile src/lxc/lxc-ps src/lxc/lxc-netstat src/lxc/lxc-checkconfig src/lxc/lxc-version src/lxc/lxc-create src/lxc/lxc-clone src/lxc/lxc-shutdown src/lxc/lxc-start-ephemeral src/lxc/lxc-destroy src/lxc/legacy/lxc-ls src/lxc/lxc.functions src/python-lxc/Makefile src/lua-lxc/Makefile src/tests/Makefile"
+-ac_config_files="$ac_config_files Makefile lxc.pc lxc.spec config/Makefile config/apparmor/Makefile config/bash/Makefile config/bash/lxc config/init/Makefile config/init/sysvinit/Makefile config/init/sysvinit/lxc config/init/systemd/Makefile config/init/systemd/lxc.service config/init/upstart/Makefile config/etc/Makefile config/templates/Makefile config/templates/centos.common.conf config/templates/centos.userns.conf config/templates/debian.common.conf config/templates/debian.userns.conf config/templates/fedora.common.conf config/templates/fedora.userns.conf config/templates/gentoo.common.conf config/templates/gentoo.moresecure.conf config/templates/gentoo.userns.conf config/templates/oracle.common.conf config/templates/oracle.userns.conf config/templates/plamo.common.conf config/templates/plamo.userns.conf config/templates/ubuntu-cloud.common.conf config/templates/ubuntu-cloud.lucid.conf config/templates/ubuntu-cloud.userns.conf config/templates/ubuntu.common.conf config/templates/ubuntu.lucid.conf config/templates/ubuntu.userns.conf config/yum/Makefile doc/Makefile doc/api/Makefile doc/legacy/lxc-ls.sgml doc/lxc-attach.sgml doc/lxc-autostart.sgml doc/lxc-cgroup.sgml doc/lxc-checkconfig.sgml doc/lxc-clone.sgml doc/lxc-config.sgml doc/lxc-console.sgml doc/lxc-create.sgml doc/lxc-destroy.sgml doc/lxc-device.sgml doc/lxc-execute.sgml doc/lxc-freeze.sgml doc/lxc-info.sgml doc/lxc-ls.sgml doc/lxc-monitor.sgml doc/lxc-snapshot.sgml doc/lxc-start-ephemeral.sgml doc/lxc-start.sgml doc/lxc-stop.sgml doc/lxc-top.sgml doc/lxc-unfreeze.sgml doc/lxc-unshare.sgml doc/lxc-user-nic.sgml doc/lxc-usernsexec.sgml doc/lxc-wait.sgml doc/lxc.conf.sgml doc/lxc.container.conf.sgml doc/lxc.system.conf.sgml doc/lxc-usernet.sgml doc/lxc.sgml doc/common_options.sgml doc/see_also.sgml doc/rootfs/Makefile doc/examples/Makefile doc/examples/lxc-macvlan.conf doc/examples/lxc-vlan.conf doc/examples/lxc-no-netns.conf doc/examples/lxc-empty-netns.conf doc/examples/lxc-phys.conf doc/examples/lxc-veth.conf doc/examples/lxc-complex.conf doc/ja/Makefile doc/ja/legacy/lxc-ls.sgml doc/ja/lxc-attach.sgml doc/ja/lxc-autostart.sgml doc/ja/lxc-cgroup.sgml doc/ja/lxc-checkconfig.sgml doc/ja/lxc-clone.sgml doc/ja/lxc-config.sgml doc/ja/lxc-console.sgml doc/ja/lxc-create.sgml doc/ja/lxc-destroy.sgml doc/ja/lxc-device.sgml doc/ja/lxc-execute.sgml doc/ja/lxc-freeze.sgml doc/ja/lxc-info.sgml doc/ja/lxc-ls.sgml doc/ja/lxc-monitor.sgml doc/ja/lxc-snapshot.sgml doc/ja/lxc-start-ephemeral.sgml doc/ja/lxc-start.sgml doc/ja/lxc-stop.sgml doc/ja/lxc-top.sgml doc/ja/lxc-unfreeze.sgml doc/ja/lxc-unshare.sgml doc/ja/lxc-user-nic.sgml doc/ja/lxc-usernsexec.sgml doc/ja/lxc-wait.sgml doc/ja/lxc.conf.sgml doc/ja/lxc.container.conf.sgml doc/ja/lxc.system.conf.sgml doc/ja/lxc-usernet.sgml doc/ja/lxc.sgml doc/ja/common_options.sgml doc/ja/see_also.sgml hooks/Makefile templates/Makefile templates/lxc-alpine templates/lxc-altlinux templates/lxc-archlinux templates/lxc-busybox templates/lxc-centos templates/lxc-cirros templates/lxc-debian templates/lxc-download templates/lxc-fedora templates/lxc-gentoo templates/lxc-openmandriva templates/lxc-opensuse templates/lxc-oracle templates/lxc-plamo templates/lxc-sshd templates/lxc-ubuntu templates/lxc-ubuntu-cloud src/Makefile src/lxc/Makefile src/lxc/lxc-checkconfig src/lxc/lxc-ls src/lxc/lxc-start-ephemeral src/lxc/legacy/lxc-ls src/lxc/lxc.functions src/lxc/version.h src/python-lxc/Makefile src/lua-lxc/Makefile src/tests/Makefile src/tests/lxc-test-usernic"
++ac_config_files="$ac_config_files Makefile lxc.pc lxc.spec config/Makefile config/apparmor/Makefile config/bash/Makefile config/bash/lxc config/init/Makefile config/init/sysvinit/Makefile config/init/sysvinit/lxc config/init/systemd/Makefile config/init/systemd/lxc.service config/init/upstart/Makefile config/etc/Makefile config/templates/Makefile config/templates/centos.common.conf config/templates/centos.userns.conf config/templates/debian.common.conf config/templates/debian.userns.conf config/templates/fedora.common.conf config/templates/fedora.userns.conf config/templates/gentoo.common.conf config/templates/gentoo.moresecure.conf config/templates/gentoo.userns.conf config/templates/oracle.common.conf config/templates/oracle.userns.conf config/templates/plamo.common.conf config/templates/plamo.userns.conf config/templates/ubuntu-cloud.common.conf config/templates/ubuntu-cloud.lucid.conf config/templates/ubuntu-cloud.userns.conf config/templates/ubuntu.common.conf config/templates/ubuntu.lucid.conf config/templates/ubuntu.userns.conf config/yum/Makefile doc/Makefile doc/api/Makefile doc/legacy/lxc-ls.sgml doc/lxc-attach.sgml doc/lxc-autostart.sgml doc/lxc-cgroup.sgml doc/lxc-checkconfig.sgml doc/lxc-clone.sgml doc/lxc-config.sgml doc/lxc-console.sgml doc/lxc-create.sgml doc/lxc-destroy.sgml doc/lxc-device.sgml doc/lxc-execute.sgml doc/lxc-freeze.sgml doc/lxc-info.sgml doc/lxc-ls.sgml doc/lxc-monitor.sgml doc/lxc-snapshot.sgml doc/lxc-start-ephemeral.sgml doc/lxc-start.sgml doc/lxc-stop.sgml doc/lxc-top.sgml doc/lxc-unfreeze.sgml doc/lxc-unshare.sgml doc/lxc-user-nic.sgml doc/lxc-usernsexec.sgml doc/lxc-wait.sgml doc/lxc.conf.sgml doc/lxc.container.conf.sgml doc/lxc.system.conf.sgml doc/lxc-usernet.sgml doc/lxc.sgml doc/common_options.sgml doc/see_also.sgml doc/rootfs/Makefile doc/examples/Makefile doc/examples/lxc-macvlan.conf doc/examples/lxc-vlan.conf doc/examples/lxc-no-netns.conf doc/examples/lxc-empty-netns.conf doc/examples/lxc-phys.conf doc/examples/lxc-veth.conf doc/examples/lxc-complex.conf doc/ja/Makefile doc/ja/legacy/lxc-ls.sgml doc/ja/lxc-attach.sgml doc/ja/lxc-autostart.sgml doc/ja/lxc-cgroup.sgml doc/ja/lxc-checkconfig.sgml doc/ja/lxc-clone.sgml doc/ja/lxc-config.sgml doc/ja/lxc-console.sgml doc/ja/lxc-create.sgml doc/ja/lxc-destroy.sgml doc/ja/lxc-device.sgml doc/ja/lxc-execute.sgml doc/ja/lxc-freeze.sgml doc/ja/lxc-info.sgml doc/ja/lxc-ls.sgml doc/ja/lxc-monitor.sgml doc/ja/lxc-snapshot.sgml doc/ja/lxc-start-ephemeral.sgml doc/ja/lxc-start.sgml doc/ja/lxc-stop.sgml doc/ja/lxc-top.sgml doc/ja/lxc-unfreeze.sgml doc/ja/lxc-unshare.sgml doc/ja/lxc-user-nic.sgml doc/ja/lxc-usernsexec.sgml doc/ja/lxc-wait.sgml doc/ja/lxc.conf.sgml doc/ja/lxc.container.conf.sgml doc/ja/lxc.system.conf.sgml doc/ja/lxc-usernet.sgml doc/ja/lxc.sgml doc/ja/common_options.sgml doc/ja/see_also.sgml hooks/Makefile templates/Makefile templates/lxc-alpine templates/lxc-altlinux templates/lxc-archlinux templates/lxc-busybox templates/lxc-centos templates/lxc-cirros templates/lxc-debian templates/lxc-download templates/lxc-fedora templates/lxc-gentoo templates/lxc-openmandriva templates/lxc-opensuse templates/lxc-oracle templates/lxc-plamo templates/lxc-sshd templates/lxc-ubuntu templates/lxc-ubuntu-cloud templates/lxc-wrlinux src/Makefile src/lxc/Makefile src/lxc/lxc-checkconfig src/lxc/lxc-ls src/lxc/lxc-start-ephemeral src/lxc/legacy/lxc-ls src/lxc/lxc.functions src/lxc/version.h src/python-lxc/Makefile src/lua-lxc/Makefile src/tests/Makefile src/tests/lxc-test-usernic"
  
  ac_config_commands="$ac_config_commands default"
  
-@@ -7608,6 +7608,7 @@ do
+@@ -10090,6 +10090,7 @@ do
      "templates/lxc-sshd") CONFIG_FILES="$CONFIG_FILES templates/lxc-sshd" ;;
-     "templates/lxc-archlinux") CONFIG_FILES="$CONFIG_FILES templates/lxc-archlinux" ;;
-     "templates/lxc-alpine") CONFIG_FILES="$CONFIG_FILES templates/lxc-alpine" ;;
+     "templates/lxc-ubuntu") CONFIG_FILES="$CONFIG_FILES templates/lxc-ubuntu" ;;
+     "templates/lxc-ubuntu-cloud") CONFIG_FILES="$CONFIG_FILES templates/lxc-ubuntu-cloud" ;;
 +    "templates/lxc-wrlinux") CONFIG_FILES="$CONFIG_FILES templates/lxc-wrlinux" ;;
      "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
      "src/lxc/Makefile") CONFIG_FILES="$CONFIG_FILES src/lxc/Makefile" ;;
-     "src/lxc/lxc-ps") CONFIG_FILES="$CONFIG_FILES src/lxc/lxc-ps" ;;
+     "src/lxc/lxc-checkconfig") CONFIG_FILES="$CONFIG_FILES src/lxc/lxc-checkconfig" ;;
 diff --git a/configure.ac b/configure.ac
-index 5d75152..4cdef7c 100644
+index 5f8cdac..3cfd655 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -366,6 +366,7 @@ AC_CONFIG_FILES([
+@@ -706,6 +706,7 @@ AC_CONFIG_FILES([
  	templates/lxc-sshd
- 	templates/lxc-archlinux
- 	templates/lxc-alpine
+ 	templates/lxc-ubuntu
+ 	templates/lxc-ubuntu-cloud
 +	templates/lxc-wrlinux
  
  	src/Makefile
  	src/lxc/Makefile
 diff --git a/templates/Makefile.am b/templates/Makefile.am
-index 0c30667..c6b6c19 100644
+index ac870a1..6aa9492 100644
 --- a/templates/Makefile.am
 +++ b/templates/Makefile.am
-@@ -11,4 +11,5 @@ templates_SCRIPTS = \
- 	lxc-busybox \
+@@ -17,4 +17,5 @@ templates_SCRIPTS = \
+ 	lxc-plamo \
  	lxc-sshd \
- 	lxc-archlinux \
--	lxc-alpine
-+	lxc-alpine \
+ 	lxc-ubuntu \
+-	lxc-ubuntu-cloud
++	lxc-ubuntu-cloud \
 +	lxc-wrlinux
 diff --git a/templates/Makefile.in b/templates/Makefile.in
-index c61c3b4..4892322 100644
+index 2902998..b858c88 100644
 --- a/templates/Makefile.in
 +++ b/templates/Makefile.in
-@@ -41,7 +41,7 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
- 	$(srcdir)/lxc-debian.in $(srcdir)/lxc-fedora.in \
- 	$(srcdir)/lxc-opensuse.in $(srcdir)/lxc-oracle.in \
- 	$(srcdir)/lxc-sshd.in $(srcdir)/lxc-ubuntu-cloud.in \
--	$(srcdir)/lxc-ubuntu.in
-+	$(srcdir)/lxc-ubuntu.in $(srcdir)/lxc-wrlinux.in
+@@ -88,7 +88,7 @@ DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+ 	$(srcdir)/lxc-openmandriva.in $(srcdir)/lxc-opensuse.in \
+ 	$(srcdir)/lxc-oracle.in $(srcdir)/lxc-plamo.in \
+ 	$(srcdir)/lxc-sshd.in $(srcdir)/lxc-ubuntu.in \
+-	$(srcdir)/lxc-ubuntu-cloud.in
++	$(srcdir)/lxc-ubuntu-cloud.in $(srcdir)/lxc-wrlinux
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/config/acinclude.m4 \
- 	$(top_srcdir)/configure.ac
-@@ -51,7 +51,7 @@ mkinstalldirs = $(install_sh) -d
- CONFIG_HEADER = $(top_builddir)/src/config.h
- CONFIG_CLEAN_FILES = lxc-debian lxc-ubuntu lxc-ubuntu-cloud \
- 	lxc-opensuse lxc-busybox lxc-fedora lxc-oracle lxc-altlinux \
--	lxc-sshd lxc-archlinux lxc-alpine
-+	lxc-sshd lxc-archlinux lxc-alpine lxc-wrlinux
+ 	$(top_srcdir)/config/tls.m4 $(top_srcdir)/configure.ac
+@@ -99,7 +99,7 @@ CONFIG_HEADER = $(top_builddir)/src/config.h
+ CONFIG_CLEAN_FILES = lxc-alpine lxc-altlinux lxc-archlinux lxc-busybox \
+ 	lxc-centos lxc-cirros lxc-debian lxc-download lxc-fedora \
+ 	lxc-gentoo lxc-openmandriva lxc-opensuse lxc-oracle lxc-plamo \
+-	lxc-sshd lxc-ubuntu lxc-ubuntu-cloud
++	lxc-sshd lxc-ubuntu lxc-ubuntu-cloud lxc-wrlinux
  CONFIG_CLEAN_VPATH_FILES =
  am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
  am__vpath_adj = case $$p in \
-@@ -230,7 +230,8 @@ templates_SCRIPTS = \
- 	lxc-busybox \
+@@ -331,7 +331,8 @@ templates_SCRIPTS = \
+ 	lxc-plamo \
  	lxc-sshd \
- 	lxc-archlinux \
--	lxc-alpine
-+	lxc-alpine \
+ 	lxc-ubuntu \
+-	lxc-ubuntu-cloud
++	lxc-ubuntu-cloud \
 +	lxc-wrlinux
  
  all: all-am
  
-@@ -287,6 +288,8 @@ lxc-archlinux: $(top_builddir)/config.status $(srcdir)/lxc-archlinux.in
+@@ -400,6 +401,8 @@ lxc-ubuntu: $(top_builddir)/config.status $(srcdir)/lxc-ubuntu.in
  	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
- lxc-alpine: $(top_builddir)/config.status $(srcdir)/lxc-alpine.in
+ lxc-ubuntu-cloud: $(top_builddir)/config.status $(srcdir)/lxc-ubuntu-cloud.in
  	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 +lxc-wrlinux: $(top_builddir)/config.status $(srcdir)/lxc-wrlinux.in
 +	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
  install-templatesSCRIPTS: $(templates_SCRIPTS)
  	@$(NORMAL_INSTALL)
- 	test -z "$(templatesdir)" || $(MKDIR_P) "$(DESTDIR)$(templatesdir)"
+ 	@list='$(templates_SCRIPTS)'; test -n "$(templatesdir)" || list=; \
 diff --git a/templates/lxc-wrlinux.in b/templates/lxc-wrlinux.in
-new file mode 100755
+new file mode 100644
 index 0000000..7a82ba2
 --- /dev/null
 +++ b/templates/lxc-wrlinux.in
@@ -290,5 +293,5 @@ index 0000000..7a82ba2
 +
 +echo "container rootfs and config created"
 -- 
-1.7.5.4
+1.9.1
 
