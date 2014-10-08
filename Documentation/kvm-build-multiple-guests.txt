@@ -108,7 +108,4 @@ linux-windriver_*.bb file to include the kvm-guest-kernel.inc.  If it
 is not present, guest multi build will not take place.
 3. The details of the scc file are beyond the scope of this document.
 scc files follow the WRLinux BSP/Yocto format. Please see the example
-scc files in wr-kernel/recipes-kernel/linux/configs and the scc files
-used to build the host kernel in
-<path>/build/linux-windriver-3.4-r0/linux/meta.
-
+scc files in wr-kernel/recipes-kernel/linux/configs.
