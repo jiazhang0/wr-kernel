@@ -19,6 +19,7 @@ KMETA = "meta"
 
 SRCREV="${AUTOREV}"
 SRCREV_meta="${AUTOREV}"
+SRCREV_machine="${AUTOREV}"
 
 KBRANCH ?= "master"
 KMACHINE ?= "${MACHINE}"
