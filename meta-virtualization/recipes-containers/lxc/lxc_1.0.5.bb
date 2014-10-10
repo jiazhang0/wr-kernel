@@ -38,13 +38,18 @@ S = "${WORKDIR}/${BPN}-${PV}"
 # Let's not configure for the host distro.
 #
 PTEST_CONF = "${@base_contains('DISTRO_FEATURES', 'ptest', '--enable-tests', '', d)}"
-EXTRA_OECONF += "--with-distro=${DISTRO} ${PTEST_CONF}"
+EXTRA_OECONF += "--with-distro=${DISTRO} ${PTEST_CONF} --disable-api-docs"
 
 PACKAGECONFIG ??= "templates"
 PACKAGECONFIG[doc] = "--enable-doc,--disable-doc,,"
 PACKAGECONFIG[rpath] = "--enable-rpath,--disable-rpath,,"
 PACKAGECONFIG[apparmour] = "--enable-apparmor,--disable-apparmor,apparmor,apparmor"
 PACKAGECONFIG[templates] = ",,, ${PN}-templates"
+
+# Not currently supported.
+PACKAGECONFIG[lua] = "--enable-lua,--disable-lua,lua,"
+PACKAGECONFIG[python3] = "--enable-python,--disable-python,python3,"
+PACKAGECONFIG[seccomp] = "--enable-seccomp,--disable-seccomp,libseccomp,"
 
 inherit autotools pkgconfig ptest
 
