@@ -1,8 +1,0 @@
-#!/bin/sh
-
-cd tests
-./run_tests.py |grep -v ^* |grep ":" | \
-  sed -u -e 's|\(.*\):\(.*\)PASS|PASS: \1|' \
-         -e 's|\(.*\):\(.*\)FAIL|FAIL: \1|' \
-         -e 's|\(.*\):\tBad configuration: \(.*\)|FAIL: \1|' \
-         -e 's|\(.*\):\t$|SKIP: \1|'
