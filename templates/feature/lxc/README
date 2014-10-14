@@ -12,13 +12,17 @@
 3. Run the lxc template WRLinux script to configure the container as follows:
 
    cd /usr/share/lxc/template
-   ./lxc-wrlinux --name=<container_name> --path=<rootfs_path>
+   ./lxc-wrlinux --name=<container_name> --path=<rootfs_path> --init=<init_method>
 
    Note: The container name must have rootfs path as optional.
          The default rootfs path is /var/lib/lxc/<container_name>/rootfs
 
+         If sysvinit guest is used, "-i sysvinit" need to be passed. The
+         default init is systemd.
+
    For example, if the container name is "wrlinux", the rootfs is extracted to
-   "/var/lib/lxc/wrlinux/rootfs". Then run the template script with:
+   "/var/lib/lxc/wrlinux/rootfs", and systemd is used by the guest.
+   Then run the template script with:
    ./lxc-wrlinux --name=wrlinux
 
    "./lxc-wrlinux --help" can show the usage info.

@@ -29,6 +29,7 @@ SRC_URI = "http://linuxcontainers.org/downloads/${BPN}-${PV}.tar.gz \
 	file://lxc-Add-template-script-for-WRLinux.patch \
         file://lxc-Add-container-name-check-in-lxc-wrlinux.patch \
 	file://add_wrlinux_distro.patch \
+	file://lxc-Tweak-lxc-template-script-for-systemd-sysvinit.patch \
 	"
 SRC_URI[md5sum] = "9d9af9e9e69a831cd50b58d91c786013"
 SRC_URI[sha256sum] = "02ac82e69a76d424e5443b9c577e84a8eaafcebf17cfd865eedee147e8ef8844"
