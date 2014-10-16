@@ -17,6 +17,8 @@ SRC_URI = "http://protobuf.googlecode.com/files/protobuf-${PV}.tar.gz \
 	file://protobuf-allow-running-python-scripts-from-anywhere.patch \
 	file://run-ptest"
 
+COMPATIBLE_HOST = "(x86_64|arm).*-linux"
+
 EXTRA_OECONF += " --with-protoc=${STAGING_BINDIR_NATIVE}/protoc"
 inherit autotools setuptools ptest
 
