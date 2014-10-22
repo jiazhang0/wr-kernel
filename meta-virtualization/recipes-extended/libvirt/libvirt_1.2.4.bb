@@ -34,13 +34,14 @@ SRC_URI = "http://libvirt.org/sources/libvirt-${PV}.tar.gz;name=libvirt \
            file://libvirtd.conf \
            file://runptest.patch \
            file://run-ptest \
+           file://libvirtd.service \
            file://tests-allow-separated-src-and-build-dirs.patch \
           "
 
 SRC_URI[libvirt.md5sum] = "da7a9ca519df45a460659189fe0024e6"
 SRC_URI[libvirt.sha256sum] = "e43ac5f6b2baeafcd01777be03a897e636f8d48c0cdfb4c4cbb80d45faa9e875"
 
-inherit autotools-brokensep gettext update-rc.d pkgconfig ptest
+inherit autotools-brokensep gettext update-rc.d pkgconfig ptest systemd
 
 CACHED_CONFIGUREVARS += "\
 ac_cv_path_XMLLINT=/usr/bin/xmllint \
@@ -116,6 +117,9 @@ FILES_${PN}-staticdev += "${libdir}/*.a ${libdir}/libvirt/connection-driver/*.a 
 INITSCRIPT_PACKAGES = "${PN}-libvirtd"
 INITSCRIPT_NAME_${PN}-libvirtd = "libvirtd"
 INITSCRIPT_PARAMS_${PN}-libvirtd = "defaults 72"
+
+SYSTEMD_PACKAGES = "${PN}-libvirtd"
+SYSTEMD_SERVICE_${PN}-libvirtd = "libvirtd.service"
 
 COMPATIBLE_HOST_mips64 = "null"
 COMPATIBLE_HOST_mips = "null"
@@ -208,6 +212,12 @@ do_install_append() {
 	     >> ${D}${sysconfdir}/default/volatiles/99_libvirt
 	echo "d root root 0755 ${localstatedir}/run/libvirt/qemu none" \
 	     >> ${D}${sysconfdir}/default/volatiles/99_libvirt
+
+        # Install systemd unit files
+        install -d ${D}${systemd_unitdir}/system
+        install -m 0644 ${WORKDIR}/libvirtd.service ${D}${systemd_unitdir}/system
+        sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/libvirtd.service
+        sed -i -e 's,@BINDIR@,${bindir},g' ${D}${systemd_unitdir}/system/libvirtd.service
 }
 
 EXTRA_OEMAKE = "BUILD_DIR=${B} DEST_DIR=${D}${PTEST_PATH} PTEST_DIR=${PTEST_PATH}"

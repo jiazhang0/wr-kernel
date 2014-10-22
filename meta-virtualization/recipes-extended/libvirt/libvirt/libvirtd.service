@@ -1,0 +1,10 @@
+[Unit]
+Description=Libvirtd Service
+After=dnsmasq.service
+
+[Service]
+ExecStartPre=-/usr/bin/pkill dnsmasq
+ExecStart=/usr/sbin/libvirtd --listen
+
+[Install]
+WantedBy=multi-user.target
