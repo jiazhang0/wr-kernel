@@ -12,6 +12,9 @@ SRC_URI[sha256sum] = "60a102b6603bbcce2da341470cad42eeaa9564a16b4490e7867026ca11
 
 inherit autotools update-rc.d
 
+PACKAGECONFIG ??= "libgcrypt"
+PACKAGECONFIG[libgcrypt] = "--with-libgcrypt, --without-libgcrypt, libgcrypt"
+
 do_install_append() {
     install -d "${D}${sysconfdir}/init.d"
     install -m 0755 ${WORKDIR}/init ${D}${sysconfdir}/init.d/rng-tools
