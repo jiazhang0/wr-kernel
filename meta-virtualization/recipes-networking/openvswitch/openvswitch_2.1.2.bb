@@ -12,6 +12,7 @@ RDEPENDS_${PN}-controller = "${PN} lsb ${PN}-pki"
 RDEPENDS_${PN}-switch = "${PN} openssl procps util-linux-uuidgen"
 RDEPENDS_${PN}-pki = "${PN}"
 RDEPENDS_${PN}-brcompat = "${PN} ${PN}-switch"
+RDEPENDS_${PN}-testing = "${PN} python-twisted-core python-twisted-web python-twisted-protocols python-zopeinterface"
 RRECOMMENDS_${PN} += "kernel-module-openvswitch"
 
 RDEPENDS_${PN}-ptest += "python-logging python-syslog python-argparse python-io \
@@ -51,7 +52,7 @@ EXTRA_OECONF += "TARGET_PYTHON=${bindir}/python \
                 "
 
 ALLOW_EMPTY_${PN}-pki = "1"
-PACKAGES =+ "${PN}-controller ${PN}-switch ${PN}-brcompat ${PN}-pki"
+PACKAGES =+ "${PN}-controller ${PN}-switch ${PN}-brcompat ${PN}-pki ${PN}-testing"
 
 FILES_${PN}-controller = "${sysconfdir}/init.d/openvswitch-controller \
 	${sysconfdir}/default/openvswitch-controller \
@@ -66,8 +67,13 @@ FILES_${PN}-switch = "${sysconfdir}/init.d/openvswitch-switch \
 # silence a warning
 FILES_${PN} += "${datadir}/ovsdbmonitor"
 FILES_${PN} += "/run"
+FILES_${PN}-testing = "${bindir}/ovs-test \
+                       ${bindir}/ovs-vlan-test \
+                       ${bindir}/ovs-l3ping \
+                       ${PYTHON_SITEPACKAGES_DIR}/ovstest/* \
+"
 
-inherit autotools update-rc.d ptest
+inherit autotools update-rc.d ptest python-dir
 
 EXTRA_OEMAKE += "TEST_DEST=${D}${PTEST_PATH} TEST_ROOT=${PTEST_PATH}"
 
@@ -92,6 +98,16 @@ do_install_append() {
 	install -m 755 ${WORKDIR}/openvswitch-controller ${D}/${sysconfdir}/init.d/openvswitch-controller
 	install -m 755 ${WORKDIR}/openvswitch-switch ${D}/${sysconfdir}/init.d/openvswitch-switch
 	true || rm -fr ${D}/${datadir}/${PN}/pki
+
+	install -m 0755 -d ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest
+	install -m 0644 ${S}/python/ovstest/args.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/args.py
+	install -m 0644 ${S}/python/ovstest/tests.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/tests.py
+	install -m 0644 ${S}/python/ovstest/__init__.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/__init__.py
+	install -m 0644 ${S}/python/ovstest/rpcserver.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/rpcserver.py
+	install -m 0644 ${S}/python/ovstest/tcp.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/tcp.py
+	install -m 0644 ${S}/python/ovstest/udp.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/udp.py
+	install -m 0644 ${S}/python/ovstest/util.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/util.py
+	install -m 0644 ${S}/python/ovstest/vswitch.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/vswitch.py
 }
 
 pkg_postinst_${PN}-pki () {
