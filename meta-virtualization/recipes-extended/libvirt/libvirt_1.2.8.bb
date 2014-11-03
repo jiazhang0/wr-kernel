@@ -38,8 +38,8 @@ SRC_URI = "http://libvirt.org/sources/libvirt-${PV}.tar.gz;name=libvirt \
            file://tests-allow-separated-src-and-build-dirs.patch \
           "
 
-SRC_URI[libvirt.md5sum] = "da7a9ca519df45a460659189fe0024e6"
-SRC_URI[libvirt.sha256sum] = "e43ac5f6b2baeafcd01777be03a897e636f8d48c0cdfb4c4cbb80d45faa9e875"
+SRC_URI[libvirt.md5sum] = "75114991290f7c8f01dd5223431b9c00"
+SRC_URI[libvirt.sha256sum] = "0049940b013ea5858b53d9b540c9df9cc3c8cb08750acfd96e9991a1f709e100"
 
 inherit autotools-brokensep gettext update-rc.d pkgconfig ptest systemd
 
@@ -74,6 +74,10 @@ ac_cv_path_LVS=/usr/sbin/lvs \
 ac_cv_path_PARTED=/usr/sbin/parted \
 ac_cv_path_DMSETUP=/usr/sbin/dmsetup"
 
+# Ensure that libvirt uses polkit rather than policykit, whether the host has
+# pkcheck installed or not, and ensure the path is correct per our config.
+CACHED_CONFIGUREVARS += "ac_cv_path_PKCHECK_PATH=${bindir}/pkcheck"
+
 # Some other possible paths we are not yet setting
 #ac_cv_path_RPCGEN=
 #ac_cv_path_XSLTPROC=
@@ -82,7 +86,6 @@ ac_cv_path_DMSETUP=/usr/sbin/dmsetup"
 #ac_cv_path_EBTABLES_PATH=
 #ac_cv_path_PKG_CONFIG=
 #ac_cv_path_ac_pt_PKG_CONFIG
-#ac_cv_path_PKCHECK_PATH=
 #ac_cv_path_POLKIT_AUTH=
 #ac_cv_path_DTRACE=
 #ac_cv_path_ISCSIADM=
@@ -178,7 +181,7 @@ PACKAGECONFIG[dtrace] = "--with-dtrace,--without-dtrace,,"
 PACKAGECONFIG[udev] = "--with-udev --with-pciaccess,--without-udev,udev libpciaccess,"
 PACKAGECONFIG[selinux] = "--with-selinux,--without-selinux,libselinux,"
 PACKAGECONFIG[ebtables] = "ac_cv_path_EBTABLES_PATH=/sbin/ebtables,ac_cv_path_EBTABLES_PATH=,ebtables,ebtables"
-PACKAGECONFIG[python] = "--with-python,--without-python,python,"
+PACKAGECONFIG[python] = ",,python,"
 PACKAGECONFIG[sasl] = "--with-sasl,--without-sasl,cyrus-sasl,cyrus-sasl"
 PACKAGECONFIG[iproute2] = "ac_cv_path_IP_PATH=/sbin/ip,ac_cv_path_IP_PATH=,iproute2,iproute2"
 PACKAGECONFIG[numactl] = "--with-numactl,--without-numactl,numactl,"
@@ -218,6 +221,9 @@ do_install_append() {
         install -m 0644 ${WORKDIR}/libvirtd.service ${D}${systemd_unitdir}/system
         sed -i -e 's,@SBINDIR@,${sbindir},g' ${D}${systemd_unitdir}/system/libvirtd.service
         sed -i -e 's,@BINDIR@,${bindir},g' ${D}${systemd_unitdir}/system/libvirtd.service
+
+        # Add hook support for libvirt
+        mkdir -p ${D}/etc/libvirt/hooks
 }
 
 EXTRA_OEMAKE = "BUILD_DIR=${B} DEST_DIR=${D}${PTEST_PATH} PTEST_DIR=${PTEST_PATH}"
