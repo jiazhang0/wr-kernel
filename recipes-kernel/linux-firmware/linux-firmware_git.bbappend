@@ -43,6 +43,11 @@ do_install_append() {
 	install -m 0644 bnx2/bnx2-mips-06-6.2.3.fw ${D}${FWPATH}/bnx2
 	install -d ${D}${FWPATH}/rtl_nic
 	install -m 0644 rtl_nic/rtl8168g-2.fw ${D}${FWPATH}/rtl_nic
+       install -d ${D}${FWPATH}/ar3k
+       install -m 0644 LICENCE.atheros_firmware ${D}${FWPATH}
+	install -m 0644 ar3k/AthrBT_0x11020000.dfu ${D}${FWPATH}/ar3k
+	install -m 0644 ar3k/ramps_0x11020000_40.dfu ${D}${FWPATH}/ar3k
+       install -m 0644 htc_9271.fw ${D}${FWPATH}
 }
 
 PACKAGES =+ "\
@@ -59,6 +64,7 @@ PACKAGES =+ "\
 	     ${PN}-bnx2-rv2p-06-6.0.15 \
 	     ${PN}-bnx2-mips-06-6.2.3 \
 	     ${PN}-rtl8168g-2 \
+            ${PN}-ath9k \
 	    "
 
 RDEPENDS_${PN}-iwlwifi-5000-5 = "${PN}-iwlwifi-license"
@@ -116,6 +122,13 @@ FILES_${PN}-bnx2-mips-06-6.2.3 = " \
 
 FILES_${PN}-rtl8168g-2 = " \
   ${FWPATH}/rtl_nic/rtl8168g-2.fw \
+"
+
+FILES_${PN}-ath9k = " \
+  ${FWPATH}/LICENCE.atheros_firmware \
+  ${FWPATH}/ar3k/AthrBT_0x11020000.dfu \
+  ${FWPATH}/ar3k/ramps_0x11020000_40.dfu \
+  ${FWPATH}/htc_9271.fw \
 "
 
 FILES_${PN}-bcm4329 = " \
