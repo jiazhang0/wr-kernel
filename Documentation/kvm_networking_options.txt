@@ -162,7 +162,23 @@ c. Identify the ID and other slot information that is associated with the PCI
    09:00.2 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
    09:00.3 Ethernet controller [0200]: Intel Corporation I350 Gigabit Network Connection [8086:1521] (rev 01)
 
-d. Add below section into libvirt xml config file <devices> section:
+d. Unbind the device from the host by using the virsh command. For example:
+
+   ~# virsh nodedev-list|grep 09
+   pci_0000_09_00_0
+   pci_0000_09_00_1
+   pci_0000_09_00_2
+   pci_0000_09_00_3
+   ~#
+
+   ~# virsh nodedev-detach pci_0000_09_00_2
+   igb 0000:09:00.2: removed PHC on eth3
+   pci-stub 0000:09:00.2: claimed by stub
+   Device pci_0000_09_00_2 detached
+
+   ~#
+
+e. Add below section into libvirt xml config file <devices> section:
 
    <hostdev mode='subsystem' type='pci' managed='yes'>
       <source>
@@ -174,7 +190,7 @@ Notes:
 
    - Here the function number is virtual function assigned to the guest.
 
-e. Start the guest.
+f. Start the guest.
 
 
 3. Bridged Networking
