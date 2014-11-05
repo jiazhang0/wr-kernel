@@ -50,3 +50,5 @@ do_install_append() {
     # Remove /var/lock as it is created on startup
     rm -rf ${D}${localstatedir}/lock
 }
+
+CONFFILES += "${sysconfdir}/drbd.conf ${sysconfdir}/drbd.d/global_common.conf"
