@@ -346,12 +346,12 @@ python do_deploy_post() {
 
 addtask deploy_post after do_deploy before do_build
 
-# sanity updates. The populate_packages_prepend and vmlinux sanity
+# sanity updates. The do_package_qa_prepend and vmlinux sanity
 # flags allow a 64 bit kernel + modules to be packaged against a
 # 32 bit userspace. If external modules are built, they must supply
 # their own INSANE_SKIP_<module> = "arch" if they want to be properly
 # packaged.
-python populate_packages_prepend () {
+python do_package_qa_prepend () {
     pkgs = d.getVar( 'PACKAGES', True )
     module_pattern = 'kernel-module-%s'
     module_regex = '^(.*)\.k?o$'
