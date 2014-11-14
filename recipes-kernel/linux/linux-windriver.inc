@@ -131,8 +131,6 @@ do_extract_kernel_output() {
 		oe_runmake DEPMOD=echo INSTALL_MOD_PATH="${EXTRACTDIR}" modules_install
 		rm "${EXTRACTDIR}/lib/modules/${KERNEL_VERSION}/build"
 		rm "${EXTRACTDIR}/lib/modules/${KERNEL_VERSION}/source"
-		# If the kernel/ directory is empty remove it to prevent QA issues
-		rmdir --ignore-fail-on-non-empty "${D}/lib/modules/${KERNEL_VERSION}/kernel"
 		tar -cvzf ${EXTRACTDIR}/${MODULE_TARBALL_BASE_NAME} -C ${EXTRACTDIR} lib
 		rm -rf "${EXTRACTDIR}/lib"
 	else
