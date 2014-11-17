@@ -241,3 +241,6 @@ pkg_postinst_libvirt() {
                 /etc/init.d/populate-volatile.sh update
         fi
 }
+
+CONFFILES_${PN} += "${sysconfdir}/libvirt/qemu.conf"
+CONFFILES_${PN} += "${sysconfdir}/libvirt/qemu/networks/default.xml"
