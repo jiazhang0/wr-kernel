@@ -23,3 +23,5 @@ IMAGE_ROOTFS_SIZE = "8192"
 IMAGE_INSTALL = "packagegroup-core-boot-wrs shadow"
 # Add any additional packages requested by IMAGE_INSTALL_INITRAMFS
 IMAGE_INSTALL += "${IMAGE_INSTALL_INITRAMFS}"
+
+USE_DEVFS = "0"
