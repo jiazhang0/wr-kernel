@@ -22,7 +22,7 @@ do_install_append() {
         ${D}${sysconfdir}/init.d/rng-tools
 
     install -d "${D}${sysconfdir}/default"
-    install -m 0644 ${WORKDIR}/default ${D}${sysconfdir}/default
+    install -m 0644 ${WORKDIR}/default ${D}${sysconfdir}/default/rng-tools
 }
 
 INITSCRIPT_NAME = "rng-tools"
