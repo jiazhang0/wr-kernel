@@ -89,6 +89,14 @@ NOTES:
    image varies from 'packagegroup-core-boot' in that it doesn't recognize packages
    included via MACHINE_ESSENTIAL_EXTRA_R* variables. If you have a package which
    is required to boot a target it must be added using the above technique.
+3) If you want to add a kernel module into the initramfs, you must add the
+   dependency of that kernel module too.
+   For example, if you want module ip_tables, x_tables must be added in:
+   IMAGE_INSTALL_INITRAMFS_append += "kernel-module-ip-tables"
+   IMAGE_INSTALL_INITRAMFS_append += "kernel-module-x-tables"
+4) For a package which creates out-of-tree module, if you want the module
+   to be in the initramfs, you must also need to add the package initramfs
+   because of dependency.
 
 Caveats
 --------
