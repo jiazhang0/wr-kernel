@@ -37,6 +37,7 @@ SRC_URI = "http://libvirt.org/sources/libvirt-${PV}.tar.gz;name=libvirt \
            file://libvirtd.service \
            file://tests-allow-separated-src-and-build-dirs.patch \
            file://0001-qemu-add-tun-devices-to-cgroup-ACL.patch \
+           file://0001-CVE-2014-7823-dumpxml-security-hole-with-migratable-.patch \
           "
 
 SRC_URI[libvirt.md5sum] = "75114991290f7c8f01dd5223431b9c00"
