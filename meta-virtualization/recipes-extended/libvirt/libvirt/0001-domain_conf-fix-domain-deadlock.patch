@@ -1,0 +1,37 @@
+From fc22b2e74890873848b43fffae43025d22053669 Mon Sep 17 00:00:00 2001
+From: Pavel Hrdina <phrdina@redhat.com>
+Date: Mon, 22 Sep 2014 18:19:07 +0200
+Subject: [PATCH] domain_conf: fix domain deadlock
+
+(Upstream commit fc22b2e74890873848b43fffae43025d22053669)
+
+If you use public api virConnectListAllDomains() with second parameter
+set to NULL to get only the number of domains you will lock out all
+other operations with domains.
+
+Introduced by commit 2c680804.
+
+Upstream-Status: Backport
+
+Signed-off-by: Pavel Hrdina <phrdina@redhat.com>
+Signed-off-by: Yue Tao <yue.tao@windriver.com>
+---
+ src/conf/domain_conf.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/conf/domain_conf.c b/src/conf/domain_conf.c
+index b114737..6ea25df 100644
+--- a/src/conf/domain_conf.c
++++ b/src/conf/domain_conf.c
+@@ -20560,7 +20560,7 @@ virDomainListPopulate(void *payload,
+     /* just count the machines */
+     if (!data->domains) {
+         data->ndomains++;
+-        return;
++        goto cleanup;
+     }
+ 
+     if (!(dom = virGetDomain(data->conn, vm->def->name, vm->def->uuid))) {
+-- 
+1.7.9.5
+
