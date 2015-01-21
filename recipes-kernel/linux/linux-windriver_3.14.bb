@@ -28,6 +28,7 @@ COMPATIBLE_MACHINE ?= '${@ machine_ktype_compatibility(d,"${LINUX_KERNEL_TYPE}")
 # hook. Instead we'll use a standalone perf package.
 # require recipes-kernel/linux/linux-tools.inc
 
+KMETA ?= "meta"
 KSRC_linux_windriver_3_14 ?= "${THISDIR}/../../git/kernel-3.14.x.git"
-SRC_URI = "git://${KSRC_linux_windriver_3_14};protocol=file;nocheckout=1;branch=${KBRANCH},meta;name=machine,meta${EXTRA_KERNEL_SRC_URI}"
+SRC_URI = "git://${KSRC_linux_windriver_3_14};protocol=file;nocheckout=1;branch=${KBRANCH},${KMETA};name=machine,meta${EXTRA_KERNEL_SRC_URI}"
 
