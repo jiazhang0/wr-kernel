@@ -17,12 +17,16 @@ SRC_URI = "git://git.drbd.org/drbd-8.4.git \
            file://drbd-8.4.3-drbd-tools-only-rmmod-if-DRBD-is-a-module.patch \
            file://documentation-do-not-try-to-install-unbuilt-document.patch \
            file://remove-definition-of-unused-define-__unused.patch \
+           file://drbd.service \
           "
 
 SRCREV = "89a294209144b68adb3ee85a73221f964d3ee515"
 
 inherit autotools-brokensep
-inherit update-rc.d useradd
+inherit update-rc.d useradd systemd
+
+SYSTEMD_SERVICE_${PN} = "drbd.service"
+SYSTEMD_AUTO_ENABLE_${PN} = "disable"
 
 USERADD_PACKAGES = "${PN}"
 GROUPADD_PARAM_${PN} = "--system haclient"
@@ -49,6 +53,9 @@ FILES_${PN} += "${libdir}/drbd ${libdir}/ocf/resource.d/linbit/drbd"
 do_install_append() {
     # Remove /var/lock as it is created on startup
     rm -rf ${D}${localstatedir}/lock
+    install -d ${D}${systemd_unitdir}/system/
+    install -m 0644 ${WORKDIR}/drbd.service ${D}${systemd_unitdir}/system/
+    sed -i -e 's#@BASE_SBINDIR@#${base_sbindir}#g' ${D}${systemd_unitdir}/system/drbd.service
 }
 
 CONFFILES += "${sysconfdir}/drbd.conf ${sysconfdir}/drbd.d/global_common.conf"

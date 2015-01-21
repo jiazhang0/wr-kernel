@@ -1,0 +1,19 @@
+[Unit]
+Description=Distributed Replicated Block Device
+After=systemd-modules-load.service network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+# load config
+ExecStart=@BASE_SBINDIR@/drbdadm adjust all
+# user interruptible version of wait-connect all
+ExecStart=@BASE_SBINDIR@/drbdadm wait-con-int
+# become primary if configured
+ExecStart=@BASE_SBINDIR@/drbdadm sh-b-pri all
+# disconnect and detach all resources
+ExecStop=@BASE_SBINDIR@/drbdadm down all
+
+[Install]
+WantedBy=multi-user.target
