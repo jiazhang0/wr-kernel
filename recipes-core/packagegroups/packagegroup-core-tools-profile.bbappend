@@ -2,7 +2,9 @@
 LTTNGMODULES = ""
 
 SYSTEMTAP_mips64 = ""
+SYSTEMTAP_mips64n32 = ""
 VALGRIND_mips64 = ""
+VALGRIND_mips64n32 = ""
 VALGRIND_powerpc = ""
 
 PACKAGES += "${PN}-lttng"

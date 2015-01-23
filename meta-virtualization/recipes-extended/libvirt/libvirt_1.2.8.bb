@@ -129,6 +129,7 @@ INITSCRIPT_PARAMS_${PN}-libvirtd = "defaults 72"
 SYSTEMD_PACKAGES = "${PN}-libvirtd"
 SYSTEMD_SERVICE_${PN}-libvirtd = "libvirtd.service"
 
+COMPATIBLE_HOST_mips64n32 = "null"
 COMPATIBLE_HOST_mips64 = "null"
 COMPATIBLE_HOST_mips = "null"
 
