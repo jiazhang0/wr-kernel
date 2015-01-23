@@ -23,6 +23,7 @@ DEPENDS = "sysfsutils perl-native"
 RDEPENDS_${PN}_x86 = "dmidecode"
 RDEPENDS_${PN}_x86-64 = "dmidecode"
 RDEPENDS_${PN}_powerpc = "dmidecode"
+RDEPENDS_${PN}_powerpc64 = "dmidecode"
 RDEPENDS_${PN}_append = " perl"
 PR = "r2"
 
