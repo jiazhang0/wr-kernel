@@ -19,10 +19,8 @@ INSANE_SKIP_${PN} = "arch"
 
 inherit module autotools-brokensep
 
-# This commit is head of SDK 1.6
-BR="sdk-v1.6.x"
-SRC_URI = "git://git.freescale.com/ppc/sdk/qoriq-debug.git;branch=$BR;protocol=git"
-SRCREV = "e1fda85d9c004686e37d933c65a38e0103cb2874"
+SRC_URI = "git://git.freescale.com/ppc/sdk/qoriq-debug.git;nobranch=1"
+SRCREV = "20615c1ea332102635f8314cee5787c48c1a4254"
 
 S = "${WORKDIR}/git"
 
