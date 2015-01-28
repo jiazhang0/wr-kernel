@@ -13,10 +13,10 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit deploy
 
-BR="sdk-v1.6.x"
-SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;branch=$BR;protocol=git \
-	file://0001-fsl_e500mc-Add-RCW-of-P2041-for-SRIO.patch"
-SRCREV = "261b2355e9936ecb37b61e6f58dfc48dcfb805b3"
+SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;nobranch=1 \
+	file://0001-fsl_e500mc-Add-RCW-of-P2041-for-SRIO.patch \
+	file://0002-T2080-Add-1533MHz-rcw-for-T2080-r1.0.patch"
+SRCREV = "3e89f378ed70e9b856756de8c3dbdfccb045fa0c"
 
 COMPATIBLE_MACHINE = "(fsl-e500mc|fsl-p50xx|fsl-t4xxx|fsl-b4xxx|fsl-t2xxx)"
 
