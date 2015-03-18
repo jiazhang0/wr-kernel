@@ -3,12 +3,14 @@
 	clone-or-force-pull-only = true
 	path = git/kernel-3.10.x.git
 	url = ../../kernel-3.10.x
+	optional = true
 
 [subgit "kernel-3.14.x"]
 	bare = true
 	clone-or-force-pull-only = true
 	path = git/kernel-3.14.x.git
 	url = ../../kernel-3.14.x
+	optional = true
 
 [subgit "windriver-kernel-tools"]
         bare = true
@@ -21,3 +23,4 @@
 	clone-or-force-pull-only = false
 	path = downloads
 	url = ../wr-kernel-dl
+	optional = true
