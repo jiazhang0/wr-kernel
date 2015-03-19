@@ -41,6 +41,8 @@ SRC_URI = "http://libvirt.org/sources/libvirt-${PV}.tar.gz;name=libvirt \
            file://0001-domain_conf-fix-domain-deadlock.patch \
            file://0001-qemu-migration-Unlock-vm-on-failed-ACL-check-in-prot.patch \
            file://0001-storage-fix-crash-caused-by-no-check-return-before-s.patch \
+           file://0001-qemu-bulk-stats-extend-internal-collection-API.patch \
+           file://0001-CVE-2014-8131-Fix-possible-deadlock-and-segfault-in-.patch \
           "
 
 SRC_URI[libvirt.md5sum] = "75114991290f7c8f01dd5223431b9c00"
