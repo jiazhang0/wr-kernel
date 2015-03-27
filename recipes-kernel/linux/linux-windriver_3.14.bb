@@ -2,6 +2,7 @@
 # Copyright (C) 2013 Wind River Systems, Inc.
 #
 inherit kernel
+inherit urlmap
 # Decide which kernel inc to pull in.  MULTI_KVM_GUEST_TRIGGER is
 # defined in local.conf and is set by configure flag --enable-kvm-multi-guest-build
 KERNEL_INC = "${@base_conditional('MULTI_KVM_GUEST_TRIGGER', '1','kvm-guest-kernel.inc','linux-windriver.inc',d)}"
