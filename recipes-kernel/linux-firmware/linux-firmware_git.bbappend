@@ -63,59 +63,59 @@ PACKAGES =+ "\
 
 RDEPENDS_${PN}-iwlwifi-5000-5 = "${PN}-iwlwifi-license"
 FILES_${PN}-iwlwifi-5000-5 = " \
-  ${FWPATH}/iwlwifi-5000-5.ucode \
+  ${FWPATH}iwlwifi-5000-5.ucode \
 "
 
 RDEPENDS_${PN}-iwlwifi-7260-9 = "${PN}-iwlwifi-license"
 FILES_${PN}-iwlwifi-7260-9 = " \
-  ${FWPATH}/iwlwifi-7260-9.ucode \
+  ${FWPATH}iwlwifi-7260-9.ucode \
 "
 
 RDEPENDS_${PN}-iwlwifi-7265-9 = "${PN}-iwlwifi-license"
 FILES_${PN}-iwlwifi-7265-9 = " \
-  ${FWPATH}/iwlwifi-7265-9.ucode \
+  ${FWPATH}iwlwifi-7265-9.ucode \
 "
 
 RDEPENDS_${PN}-ibt-hw-37.7.10-fw-1.80.2.3.d = "${PN}-iwlwifi-license"
 FILES_${PN}-ibt-hw-37.7.10-fw-1.80.2.3.d = " \
-  ${FWPATH}/intel/ibt-hw-37.7.10-fw-1.80.2.3.d.bseq \
+  ${FWPATH}intel/ibt-hw-37.7.10-fw-1.80.2.3.d.bseq \
 "
 
 RDEPENDS_${PN}-ibt-hw-37.8.10-fw-1.10.2.27.d = "${PN}-iwlwifi-license"
 FILES_${PN}-ibt-hw-37.8.10-fw-1.10.2.27.d = " \
-  ${FWPATH}/intel/ibt-hw-37.8.10-fw-1.10.2.27.d.bseq \
+  ${FWPATH}intel/ibt-hw-37.8.10-fw-1.10.2.27.d.bseq \
 "
 
 FILES_${PN}-bnx2x-e2-7.2.16.0 = " \
-  ${FWPATH}/bnx2x/bnx2x-e2-7.2.16.0.fw \
+  ${FWPATH}bnx2x/bnx2x-e2-7.2.16.0.fw \
 "
 
 FILES_${PN}-bnx2x-e2-7.8.17.0 = " \
-  ${FWPATH}/bnx2x/bnx2x-e2-7.8.17.0.fw \
+  ${FWPATH}bnx2x/bnx2x-e2-7.8.17.0.fw \
 "
 
 FILES_${PN}-bnx2-rv2p-09-6.0.17 = " \
-  ${FWPATH}/bnx2/bnx2-rv2p-09-6.0.17.fw \
+  ${FWPATH}bnx2/bnx2-rv2p-09-6.0.17.fw \
 "
 
 FILES_${PN}-bnx2-rv2p-09ax-6.0.17 = " \
-  ${FWPATH}/bnx2/bnx2-rv2p-09ax-6.0.17.fw \
+  ${FWPATH}bnx2/bnx2-rv2p-09ax-6.0.17.fw \
 "
 
 FILES_${PN}-bnx2-mips-09-6.2.1b = " \
-  ${FWPATH}/bnx2/bnx2-mips-09-6.2.1b.fw \
+  ${FWPATH}bnx2/bnx2-mips-09-6.2.1b.fw \
 "
 
 FILES_${PN}-bnx2-rv2p-06-6.0.15 = " \
-  ${FWPATH}/bnx2/bnx2-rv2p-06-6.0.15.fw \
+  ${FWPATH}bnx2/bnx2-rv2p-06-6.0.15.fw \
 "
 
 FILES_${PN}-bnx2-mips-06-6.2.3 = " \
-  ${FWPATH}/bnx2/bnx2-mips-06-6.2.3.fw \
+  ${FWPATH}bnx2/bnx2-mips-06-6.2.3.fw \
 "
 
 FILES_${PN}-rtl8168g-2 = " \
-  ${FWPATH}/rtl_nic/rtl8168g-2.fw \
+  ${FWPATH}rtl_nic/rtl8168g-2.fw \
 "
 
 FILES_${PN}-bcm4329 = " \
