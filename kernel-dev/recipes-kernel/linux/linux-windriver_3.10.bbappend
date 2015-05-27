@@ -32,8 +32,8 @@ do_install_kernel_headers_append() {
 	done
 }
 
-python sysroot_stage_all_append() {
-    oe.path.copyhardlinktree(d.expand("${D}${KERNEL_ALT_HEADER_DIR}"), d.expand("${SYSROOT_DESTDIR}${KERNEL_ALT_HEADER_DIR}"))
+sysroot_stage_all_append() {
+    sysroot_stage_dir ${D}${KERNEL_ALT_HEADER_DIR} ${SYSROOT_DESTDIR}${KERNEL_ALT_HEADER_DIR}
 }
 
 # pick up feature handlers
