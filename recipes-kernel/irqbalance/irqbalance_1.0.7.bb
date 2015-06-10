@@ -14,4 +14,5 @@ SRC_URI = "http://pkgs.fedoraproject.org/repo/pkgs/irqbalance/irqbalance-1.0.7.t
            file://irqbalance-Add-status-and-reload-commands.patch \
            file://fix-configure-libcap-ng.patch \
            file://irqbalanced.service \
+           file://0001-fix-memory-leak-in-classify-code.patch \
           "
