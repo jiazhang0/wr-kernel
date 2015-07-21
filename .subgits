@@ -1,10 +1,3 @@
-[subgit "kernel-3.10.x"]
-	bare = true
-	clone-or-force-pull-only = true
-	path = git/kernel-3.10.x.git
-	url = ../../kernel-3.10.x
-	optional = true
-
 [subgit "kernel-3.14.x"]
 	bare = true
 	clone-or-force-pull-only = true
