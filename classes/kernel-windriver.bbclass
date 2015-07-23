@@ -126,7 +126,7 @@ do_deploy_append() {
 }
 
 
-OE_TERMINAL_EXPORTS += "GUILT_BASE KBUILD_OUTPUT LDFLAGS CC"
+OE_TERMINAL_EXPORTS += "GUILT_BASE KBUILD_OUTPUT LDFLAGS CC KCFLAGS"
 GUILT_BASE = "meta"
 python do_devshell () {
     # The CROSS_COMPILE and ARCH are already exported by the global
@@ -137,6 +137,9 @@ python do_devshell () {
     d.setVar("LDFLAGS", "")
     # We clear CC, so the kernel can use CROSS_COMPILE directly
     d.setVar("CC", "")
+    # We use KCFLAGS to set a sysroot for cross-toolchain,
+    # so that it can locate libgcc properly.
+    d.setVar("KCFLAGS", "--sysroot=%s" % (d.getVar('STAGING_DIR_TARGET', False) or ''))
     oe_terminal( d.getVar('SHELL', True), 'Wind River Kernel Developer Shell', d)
 }
 
