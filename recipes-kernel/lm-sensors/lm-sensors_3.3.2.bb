@@ -23,16 +23,21 @@ SRC_URI = "http://dl.lm-sensors.org/lm-sensors/releases/lm_sensors-${PV}.tar.bz2
            file://lm_sensors-pci-not-required.patch \
            file://sensord.init \
            file://sensord.conf \
+           file://sensord.service \
 "
 
 SRC_URI[md5sum] = "f357ba00b080ab102a170f7bf8bb2578"
 SRC_URI[sha256sum] = "f13dd885406841a7352ccfb8b9ccb23c4c057abe3de4258da5444c149a9e3ae1"
 
-inherit update-rc.d
+inherit update-rc.d systemd
 
 INITSCRIPT_PACKAGES = "lmsensors-sensord"
 INITSCRIPT_NAME_${PN}-sensord = "sensord"
 INITSCRIPT_PARAMS_${PN}-sensord = "defaults 67"
+
+SYSTEMD_PACKAGES = "lmsensors-sensord"
+SYSTEMD_SERVICE_${PN}-sensord = "sensord.service"
+SYSTEMD_AUTO_ENABLE = "disable"
 
 S = "${WORKDIR}/lm_sensors-${PV}"
 
@@ -57,6 +62,19 @@ do_install() {
 
 	# Install sensord init script
 	install -m 0755 ${WORKDIR}/sensord.init ${D}${sysconfdir}/init.d/sensord
+
+	# Insall sensord service script
+	if ${@base_contains('DISTRO_FEATURES','systemd','true','false',d)}; then
+		install -d ${D}${systemd_unitdir}/system
+		install -m 0644 ${WORKDIR}/sensord.service ${D}${systemd_unitdir}/system
+
+		install -d ${D}${sysconfdir}/systemd/system
+		ln -s ${systemd_unitdir}/system/sensord.service ${D}${sysconfdir}/systemd/system/sensord.service
+
+		sed -i -e 's#@SYSCONFDIR@#${sysconfdir}#g' ${D}${systemd_unitdir}/system/sensord.service
+		sed -i -e 's#@LOCALSTATEDIR@#${localstatedir}#g' ${D}${systemd_unitdir}/system/sensord.service
+		sed -i -e 's#@BINDIR@#${bindir}#g' ${D}${systemd_unitdir}/system/sensord.service
+	fi
 }
 
 PACKAGES =+ "libsensors libsensors-dev libsensors-staticdev libsensors-dbg libsensors-doc"
@@ -90,7 +108,7 @@ RDEPENDS_lmsensors-sensord = "lmsensors-sensors rrdtool"
 FILES_lmsensors-sensors = "${bindir}/sensors ${sysconfdir}"
 FILES_lmsensors-sensors-dbg += "${bindir}/.debug/sensors"
 FILES_lmsensors-sensors-doc = "${mandir}/man1 ${mandir}/man5"
-FILES_lmsensors-sensord = "${bindir}/sensord ${sysconfdir}/init.d/sensord ${sysconfdir}/sensord.conf"
+FILES_lmsensors-sensord = "${bindir}/sensord ${sysconfdir}/init.d/sensord ${sysconfdir}/sensord.conf ${systemd_unitdir}/system/sensord.service"
 FILES_libsensors = "${libdir}/libsensors.so.*"
 FILES_libsensors-dbg += "${libdir}/.debug"
 FILES_libsensors-dev = "${libdir}/libsensors.so ${includedir}"
