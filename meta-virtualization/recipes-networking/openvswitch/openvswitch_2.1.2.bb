@@ -35,6 +35,7 @@ SRC_URI = "http://openvswitch.org/releases/openvswitch-${PV}.tar.gz \
 	file://openvswitch-ovsdb-automake-mkdir-ovsdb.patch \
 	file://openvswitch-add-ptest.patch \
 	file://run-ptest \
+	file://add_brackets_around_env_avoid_comma.patch \
 	"
 
 SRC_URI[md5sum] = "430ff6d1e1fc81e9c5ebc2e641cfc953"
