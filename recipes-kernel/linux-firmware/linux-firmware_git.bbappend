@@ -43,6 +43,8 @@ do_install_append() {
 	install -m 0644 bnx2/bnx2-mips-06-6.2.3.fw ${D}${FWPATH}/bnx2
 	install -d ${D}${FWPATH}/rtl_nic
 	install -m 0644 rtl_nic/rtl8168g-2.fw ${D}${FWPATH}/rtl_nic
+	install -d ${D}${FWPATH}/rtlwifi
+	install -m 0644 rtlwifi/rtl8723befw.bin ${D}${FWPATH}/rtlwifi
 }
 
 PACKAGES =+ "\
@@ -59,6 +61,7 @@ PACKAGES =+ "\
 	     ${PN}-bnx2-rv2p-06-6.0.15 \
 	     ${PN}-bnx2-mips-06-6.2.3 \
 	     ${PN}-rtl8168g-2 \
+             ${PN}-rtl8723befw \
 	    "
 
 RDEPENDS_${PN}-iwlwifi-5000-5 = "${PN}-iwlwifi-license"
@@ -116,6 +119,10 @@ FILES_${PN}-bnx2-mips-06-6.2.3 = " \
 
 FILES_${PN}-rtl8168g-2 = " \
   ${FWPATH}/rtl_nic/rtl8168g-2.fw \
+"
+
+FILES_${PN}-rtl8723befw = " \
+  ${FWPATH}/rtlwifi/rtl8723befw.bin \
 "
 
 FILES_${PN}-bcm4329 = " \
