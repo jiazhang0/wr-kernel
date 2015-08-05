@@ -19,7 +19,7 @@ LIC_FILES_CHKSUM = " \
                     file://LICENCE.ibt_firmware;md5=fdbee1ddfe0fb7ab0b2fcd6b454a366b \
 		   "
 
-SRCREV = "38e5405c96d10bb42b629b45210c46166461fc21"
+SRCREV = "ec89525b2ab65f1d5ae4f67e27f0d525ddedd2ef"
 
 FWPATH = "/lib/firmware"
 
