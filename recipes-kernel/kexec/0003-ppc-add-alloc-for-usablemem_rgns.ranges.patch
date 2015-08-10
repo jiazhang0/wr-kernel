@@ -1,0 +1,47 @@
+From 6d4984aa7d68ded3f2eb6f46ef03e4291fa8b535 Mon Sep 17 00:00:00 2001
+From: Jiang Lu <lu.jiang@windriver.com>
+Date: Thu, 12 Jun 2014 13:52:24 +0800
+Subject: [PATCH] ppc:add alloc for usablemem_rgns.ranges
+
+usablemem_rgns.ranges is a pointer to the array of usable memory
+regions. The array should be alloced after max_memory_ranges
+determined.
+
+This patch adds alloc operation in alloc_memory_ranges().
+
+Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
+---
+ kexec/arch/ppc/kexec-ppc.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/kexec/arch/ppc/kexec-ppc.c b/kexec/arch/ppc/kexec-ppc.c
+index d046110..d5e73bd 100644
+--- a/kexec/arch/ppc/kexec-ppc.c
++++ b/kexec/arch/ppc/kexec-ppc.c
+@@ -198,6 +198,7 @@ static int count_memory_ranges(void)
+ 	 free(memory_range);
+ 	 free(base_memory_range);
+ 	 free(exclude_range);
++	 free(usablemem_rgns.ranges);
+  }
+ 
+ /*
+@@ -222,9 +223,15 @@ static int alloc_memory_ranges(void)
+ 	if (!exclude_range)
+ 		goto err1;
+ 
++	usablemem_rgns.ranges = (struct memory_range *)
++				malloc(memory_range_len);
++	if (!(usablemem_rgns.ranges))
++		goto err1;
++
+ 	memset(memory_range, 0, memory_range_len);
+ 	memset(base_memory_range, 0, memory_range_len);
+ 	memset(exclude_range, 0, memory_range_len);
++	memset(usablemem_rgns.ranges, 0, memory_range_len);
+ 	return 0;
+ 
+ err1:
+-- 
+1.9.1
+

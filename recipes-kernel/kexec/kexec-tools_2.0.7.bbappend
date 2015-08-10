@@ -4,4 +4,5 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}:"
 
 SRC_URI += "file://0001-purgatory-Disabling-GCC-s-stack-protection.patch \
-	    file://0002-powerpc-change-the-memory-size-limit.patch"
+	    file://0002-powerpc-change-the-memory-size-limit.patch \
+		file://0003-ppc-add-alloc-for-usablemem_rgns.ranges.patch"
