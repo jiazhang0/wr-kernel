@@ -1,0 +1,72 @@
+From 70b0475aed03b5070fc2ee5b77fd2f0ff4ea20d2 Mon Sep 17 00:00:00 2001
+From: Quanyang Wang <quanyang.wang@windriver.com>
+Date: Wed, 29 Jul 2015 18:22:07 +0800
+Subject: [PATCH] lsi: acp: Using correct device node name to set property
+
+In bsp's dts files, the spi controller device node name is
+"/plb/opb/ssp@00402000" but not "/plb/opb/ssp0", also is the 
+i2c controller. So change the device node name, else u-boot
+will boot fail with log as below:
+
+Error Updating OS Group 0.
+board.c:acp_init_r:1786 - System Failure
+System Reset
+
+Signed-off-by: Quanyang Wang <quanyang.wang@windriver.com>
+---
+ board/lsi/axxia-ppc/osg.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/board/lsi/axxia-ppc/osg.c b/board/lsi/axxia-ppc/osg.c
+index 6d60273..9a836ea 100644
+--- a/board/lsi/axxia-ppc/osg.c
++++ b/board/lsi/axxia-ppc/osg.c
+@@ -1242,12 +1242,18 @@ acp_osg_update_dt(void *input, int group)
+ 	else
+ 		value = 0;
+ 
+-	rc = fdt_find_and_setprop(dt, "/plb/opb/ssp0",
++	rc = fdt_find_and_setprop(dt, "/plb/opb/ssp@00402000",
+ 				  "enabled", (void *)&value,
+ 				  sizeof(unsigned long), 1);
+-	rc |= fdt_find_and_setprop(dt, "/plb/opb/ssp0",
+-				   "status", (void *)status[value],
+-				   strlen(status[value]) + 1, 1);
++
++	if (0 != rc) {
++		rc = fdt_find_and_setprop(dt, "/plb/opb/ssp0",
++				  		"enabled", (void *)&value,
++				  		sizeof(unsigned long), 1);
++		rc |= fdt_find_and_setprop(dt, "/plb/opb/ssp0",
++				   		"status", (void *)status[value],
++				   		strlen(status[value]) + 1, 1);
++	}
+ 
+ 	if (0 != rc)
+ 		return -1;
+@@ -1259,12 +1265,18 @@ acp_osg_update_dt(void *input, int group)
+ 	else
+ 		value = 0;
+ 
+-	rc = fdt_find_and_setprop(dt, "/plb/opb/i2c0",
++	rc = fdt_find_and_setprop(dt, "/plb/opb/i2c@00403000",
+ 				  "enabled", (void *)&value,
+ 				  sizeof(unsigned long), 1);
+-	rc |= fdt_find_and_setprop(dt, "/plb/opb/i2c0",
+-				   "status", (void *)status[value],
+-				   strlen(status[value]) + 1, 1);
++
++	if (0 != rc) {
++		rc = fdt_find_and_setprop(dt, "/plb/opb/i2c0",
++				  		"enabled", (void *)&value,
++				  		sizeof(unsigned long), 1);
++		rc |= fdt_find_and_setprop(dt, "/plb/opb/i2c0",
++				   		"status", (void *)status[value],
++				   		strlen(status[value]) + 1, 1);
++	}
+ 
+ 	if (0 != rc)
+ 		return -1;
+-- 
+1.9.1
+

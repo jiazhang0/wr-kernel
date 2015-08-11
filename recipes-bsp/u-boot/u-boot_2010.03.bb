@@ -12,7 +12,8 @@ SRCREV = "ca6e1c136ddb720c3bb2cc043b99f7f06bc46c55"
 
 SRC_URI = "git://git.denx.de/u-boot.git;branch=master;protocol=git "
 SRC_URI_append_lsi-acp34xx = "file://0001-Applied-lsi.patch.patch \
-                              file://0002-acp344xv2-acp342x-update-the-device-tree-header-file.patch"
+                              file://0002-acp344xv2-acp342x-update-the-device-tree-header-file.patch \
+                              file://0003-lsi-acp-Using-correct-device-node-name-to-set-proper.patch"
 
 S = "${WORKDIR}/git"
 
