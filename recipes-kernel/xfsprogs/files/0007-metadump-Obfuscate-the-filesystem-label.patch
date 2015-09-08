@@ -1,0 +1,41 @@
+From 8927d44b632cfdf49338a12b0b7a7a58a474de98 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] metadump: Obfuscate the filesystem label
+
+Not a lot of room for sensitive data, but while
+we're at it...
+
+There is no need to do the normal hashed name,
+we just replace it with "L's" - and for kicks,
+we preserve the length of the label.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index bea5de7..5cc1ece 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -2049,6 +2049,13 @@ scan_ag(
+ 		if (stop_on_read_error)
+ 			goto pop_out;
+ 	} else {
++		/* Replace any filesystem label with "L's" */
++		if (obfuscate) {
++			struct xfs_sb *sb = iocur_top->data;
++			memset(sb->sb_fname, 'L',
++			       min(strlen(sb->sb_fname), sizeof(sb->sb_fname)));
++			iocur_top->need_crc = 1;
++		}
+ 		if (write_buf(iocur_top))
+ 			goto pop_out;
+ 	}
+-- 
+1.7.9.5
+

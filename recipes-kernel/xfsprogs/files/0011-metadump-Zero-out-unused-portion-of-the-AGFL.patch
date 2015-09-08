@@ -1,0 +1,48 @@
+From 18cdb6141c404f1a5b36a6447c4f0fb1f0e843dd Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] metadump: Zero out unused portion of the AGFL
+
+mkfs.xfs doesn't zero the AGFL, so if it hasn't been
+entirely used, metadump can pick up stale data.  Zero
+the unused parts.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index cd2edf0..8520f66 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -2099,6 +2099,23 @@ scan_ag(
+ 		if (stop_on_read_error)
+ 			goto pop_out;
+ 	} else {
++		if (agf && zero_stale_data) {
++			/* Zero out unused bits of agfl */
++			int i;
++			 __be32  *agfl_bno;
++
++			agfl_bno = XFS_BUF_TO_AGFL_BNO(mp, iocur_top->bp);
++			i = be32_to_cpu(agf->agf_fllast);
++
++			for (;;) {
++				if (++i == XFS_AGFL_SIZE(mp))
++					i = 0;
++				if (i == be32_to_cpu(agf->agf_flfirst))
++					break;
++				agfl_bno[i] = cpu_to_be32(NULLAGBLOCK);
++			}
++			iocur_top->need_crc = 1;
++		}
+ 		if (write_buf(iocur_top))
+ 			goto pop_out;
+ 	}
+-- 
+1.7.9.5
+

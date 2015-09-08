@@ -1,0 +1,77 @@
+From 190df617c737f38e02a27e797e5c26b6dadedf47 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:02 +1000
+Subject: [PATCH] metadump: zero out clean log
+
+When doing an xfs_metadump, if the log is clean, zero it out
+for 2 reasons:
+
+ * It'll make the image more compressible
+ * It'll eliminate an un-obfuscated metadata source
+
+If the log isn't clean, and the user expected obfuscation, warn
+that metadata in the log will not be obfuscated.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Dave Chinner <dchinner@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |   28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index 074b515..d03abd1 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include <libxfs.h>
++#include <libxlog.h>
+ #include "bmap.h"
+ #include "command.h"
+ #include "metadump.h"
+@@ -2169,6 +2170,8 @@ copy_sb_inodes(void)
+ static int
+ copy_log(void)
+ {
++	int dirty;
++
+ 	if (show_progress)
+ 		print_progress("Copying log");
+ 
+@@ -2180,6 +2183,31 @@ copy_log(void)
+ 		print_warning("cannot read log");
+ 		return !stop_on_read_error;
+ 	}
++
++	dirty = xlog_is_dirty(mp, &x, 0);
++
++	switch (dirty) {
++	case 0:
++		/* clear out a clean log */
++		if (show_progress)
++			print_progress("Zeroing clean log");
++		memset(iocur_top->data, 0,
++			mp->m_sb.sb_logblocks * mp->m_sb.sb_blocksize);
++		break;
++	case 1:
++		/* keep the dirty log */
++		if (obfuscate)
++			print_warning(
++_("Filesystem log is dirty; image will contain unobfuscated metadata in log."));
++		break;
++	case -1:
++		/* log detection error */
++		if (obfuscate)
++			print_warning(
++_("Could not discern log; image will contain unobfuscated metadata in log."));
++		break;
++	}
++
+ 	return !write_buf(iocur_top);
+ }
+ 
+-- 
+1.7.9.5
+

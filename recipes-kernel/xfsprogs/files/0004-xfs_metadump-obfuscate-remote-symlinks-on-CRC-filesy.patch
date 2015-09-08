@@ -1,0 +1,45 @@
+From 80917c1a0df4f940ac996ecdb142809860dd04c9 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@redhat.com>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] xfs_metadump: obfuscate remote symlinks on CRC filesystems
+
+On CRC filesystems, the symlink block starts with a header,
+which contains magic, "XLSM"
+
+The code happens to "work" today w/o corrupting anything,
+because it seems "XSLM" as a string, decides it's too short
+to obfuscate, and leaves it alone.
+
+But the real symlink target is untouched.  Fix that by moving
+the pointer to the string we want to obfuscate by the size
+of the header, and shorten the length to obfuscate accordingly.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index b5e7a23..773d18c 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -1240,8 +1240,12 @@ static void
+ obfuscate_symlink_block(
+ 	char			*block)
+ {
+-	/* XXX: need to handle CRC headers */
+-	obfuscate_path_components(block, mp->m_sb.sb_blocksize);
++	if (xfs_sb_version_hascrc(&(mp)->m_sb))
++		block += sizeof(struct xfs_dsymlink_hdr);
++
++	obfuscate_path_components(block,
++				  XFS_SYMLINK_BUF_SPACE(mp,
++					mp->m_sb.sb_blocksize));
+ }
+ 
+ #define MAX_REMOTE_VALS		4095
+-- 
+1.7.9.5
+

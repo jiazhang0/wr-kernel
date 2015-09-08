@@ -1,0 +1,35 @@
+From 75333d298210586eb7730ed4c5838df7bd786a99 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] metadump: Copy the log if not obfuscating or zeroing
+
+If we're not obfuscating and we're not zeroing out
+stale data, we're collecting maximal information.  Keep
+even a clean log intact in that case as well.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index 67d2545..cd2edf0 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -2207,8 +2207,8 @@ copy_log(void)
+ 		return !stop_on_read_error;
+ 	}
+ 
+-	/* If not obfuscating, just copy the log as it is */
+-	if (!obfuscate)
++	/* If not obfuscating or zeroing, just copy the log as it is */
++	if (!obfuscate && !zero_stale_data)
+ 		goto done;
+ 
+ 	dirty = xlog_is_dirty(mp, &x, 0);
+-- 
+1.7.9.5
+

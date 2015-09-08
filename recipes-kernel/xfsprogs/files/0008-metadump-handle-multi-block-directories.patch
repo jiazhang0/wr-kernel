@@ -1,0 +1,46 @@
+From aad766a5bc5dfd18888897ea8260db753c7fac9f Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] metadump: handle multi-block directories
+
+assembled a buffer from multiple dir blocks, and we can use that in
+obfuscate_dir_data_block() to continue past the first filesystem block
+and continue obfuscating the entire thing.
+
+Without this, anything after the first block was skipped, and
+remained as cleartext.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index 5cc1ece..dd1d7ab 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -1152,9 +1152,6 @@ obfuscate_dir_data_block(
+ 
+ 	datahdr = (struct xfs_dir2_data_hdr *)block;
+ 
+-	if (offset % mp->m_dirblkfsbs != 0)
+-		return;	/* corrupted, leave it alone */
+-
+ 	if (is_block_format) {
+ 		xfs_dir2_leaf_entry_t	*blp;
+ 		xfs_dir2_block_tail_t	*btp;
+@@ -1187,7 +1184,7 @@ obfuscate_dir_data_block(
+ 
+ 	dir_offset = xfs_dir3_data_entry_offset(datahdr);
+ 	ptr = block + dir_offset;
+-	endptr = block + mp->m_sb.sb_blocksize;
++	endptr = block + mp->m_dirblksize;
+ 
+ 	while (ptr < endptr && dir_offset < end_of_data) {
+ 		xfs_dir2_data_entry_t	*dep;
+-- 
+1.7.9.5
+

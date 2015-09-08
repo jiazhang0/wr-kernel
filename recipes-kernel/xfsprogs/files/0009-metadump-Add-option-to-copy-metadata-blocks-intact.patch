@@ -1,0 +1,114 @@
+From b09e839e3637203c16a9793d93cde78307f13d7b Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] metadump: Add option to copy metadata blocks intact
+
+By default we zero out unused portions of metadata blocks.
+This adds an option to keep blocks intact, to better investigate
+corruptions.
+
+Nothing in this patch reads it, but subsequent patches add
+users of the option.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c           |    9 +++++++--
+ db/xfs_metadump.sh      |    5 +++--
+ man/man8/xfs_metadump.8 |   10 +++++++++-
+ 3 files changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index dd1d7ab..67d2545 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -57,7 +57,7 @@ static void	metadump_help(void);
+ 
+ static const cmdinfo_t	metadump_cmd =
+ 	{ "metadump", NULL, metadump_f, 0, -1, 0,
+-		N_("[-e] [-g] [-m max_extent] [-w] [-o] filename"),
++		N_("[-a] [-e] [-g] [-m max_extent] [-w] [-o] filename"),
+ 		N_("dump metadata to a file"), metadump_help };
+ 
+ static FILE		*outf;		/* metadump file */
+@@ -75,6 +75,7 @@ static int		show_progress = 0;
+ static int		stop_on_read_error = 0;
+ static int		max_extent_size = DEFAULT_MAX_EXT_SIZE;
+ static int		obfuscate = 1;
++static int		zero_stale_data = 1;
+ static int		show_warnings = 0;
+ static int		progress_since_warning = 0;
+ 
+@@ -93,6 +94,7 @@ metadump_help(void)
+ " for compressing and sending to an XFS maintainer for corruption analysis \n"
+ " or xfs_repair failures.\n\n"
+ " Options:\n"
++"   -a -- Copy full metadata blocks without zeroing unused space\n"
+ "   -e -- Ignore read errors and keep going\n"
+ "   -g -- Display dump progress\n"
+ "   -m -- Specify max extent size in blocks to copy (default = %d blocks)\n"
+@@ -2256,8 +2258,11 @@ metadump_f(
+ 		return 0;
+ 	}
+ 
+-	while ((c = getopt(argc, argv, "egm:ow")) != EOF) {
++	while ((c = getopt(argc, argv, "aegm:ow")) != EOF) {
+ 		switch (c) {
++			case 'a':
++				zero_stale_data = 0;
++				break;
+ 			case 'e':
+ 				stop_on_read_error = 1;
+ 				break;
+diff --git a/db/xfs_metadump.sh b/db/xfs_metadump.sh
+index a95d5a5..836d3ae 100755
+--- a/db/xfs_metadump.sh
++++ b/db/xfs_metadump.sh
+@@ -5,11 +5,12 @@
+ 
+ OPTS=" "
+ DBOPTS=" "
+-USAGE="Usage: xfs_metadump [-efFogwV] [-m max_extents] [-l logdev] source target"
++USAGE="Usage: xfs_metadump [-aefFogwV] [-m max_extents] [-l logdev] source target"
+ 
+-while getopts "efgl:m:owFV" c
++while getopts "aefgl:m:owFV" c
+ do
+ 	case $c in
++	a)	OPTS=$OPTS"-a ";;
+ 	e)	OPTS=$OPTS"-e ";;
+ 	g)	OPTS=$OPTS"-g ";;
+ 	m)	OPTS=$OPTS"-m "$OPTARG" ";;
+diff --git a/man/man8/xfs_metadump.8 b/man/man8/xfs_metadump.8
+index 077fff5..81a17a9 100644
+--- a/man/man8/xfs_metadump.8
++++ b/man/man8/xfs_metadump.8
+@@ -4,7 +4,7 @@ xfs_metadump \- copy XFS filesystem metadata to a file
+ .SH SYNOPSIS
+ .B xfs_metadump
+ [
+-.B \-efFgow
++.B \-aefFgow
+ ] [
+ .B \-m
+ .I max_extents
+@@ -74,6 +74,14 @@ tool.
+ .PP
+ .SH OPTIONS
+ .TP
++.B \-a
++Copies entire metadata blocks.  Normally,
++.B xfs_metadump
++will zero any stale
++bytes interspersed with in-use metadata.  Use this option to copy full metadata
++blocks, to provide more debugging information for a corrupted filesystem.  Note
++that the extra data will be unobfuscated.
++.TP
+ .B \-e
+ Stops the dump on a read error. Normally, it will ignore read errors and copy
+ all the metadata that is accessible.
+-- 
+1.7.9.5
+

@@ -1,0 +1,61 @@
+From 37a78181fb35867df62e80e2edd932b58a2729ef Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@redhat.com>
+Date: Thu, 30 Jul 2015 09:17:43 +1000
+Subject: [PATCH] xfs_metadump: don't zero log if not obfuscating
+
+The earlier commit:
+
+ec693e1 metadump: zero out clean log
+
+ignored the "obfuscate" state, but there's no reason to
+zero out the log if we're not obfuscating; all the other
+metadata is in the clear, so we may as well keep it around
+in the log as well.
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Dave Chinner <dchinner@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index d03abd1..b5e7a23 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -2184,6 +2184,10 @@ copy_log(void)
+ 		return !stop_on_read_error;
+ 	}
+ 
++	/* If not obfuscating, just copy the log as it is */
++	if (!obfuscate)
++		goto done;
++
+ 	dirty = xlog_is_dirty(mp, &x, 0);
+ 
+ 	switch (dirty) {
+@@ -2196,18 +2200,17 @@ copy_log(void)
+ 		break;
+ 	case 1:
+ 		/* keep the dirty log */
+-		if (obfuscate)
+-			print_warning(
++		print_warning(
+ _("Filesystem log is dirty; image will contain unobfuscated metadata in log."));
+ 		break;
+ 	case -1:
+ 		/* log detection error */
+-		if (obfuscate)
+-			print_warning(
++		print_warning(
+ _("Could not discern log; image will contain unobfuscated metadata in log."));
+ 		break;
+ 	}
+ 
++done:
+ 	return !write_buf(iocur_top);
+ }
+ 
+-- 
+1.7.9.5
+

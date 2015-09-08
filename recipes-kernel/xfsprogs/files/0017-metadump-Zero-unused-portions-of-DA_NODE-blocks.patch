@@ -1,0 +1,53 @@
+From c83c169e813590d019d1200aa28f461ca275d447 Mon Sep 17 00:00:00 2001
+From: Eric Sandeen <sandeen@sandeen.net>
+Date: Thu, 30 Jul 2015 09:21:08 +1000
+Subject: [PATCH] metadump: Zero unused portions of DA_NODE blocks
+
+Zero out unused portions of interior nodes of DA btrees
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Brian Foster <bfoster@redhat.com>
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+---
+ db/metadump.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/db/metadump.c b/db/metadump.c
+index 32a2f70..d293581 100644
+--- a/db/metadump.c
++++ b/db/metadump.c
+@@ -1483,6 +1483,31 @@ process_single_fsb_objects(
+ 		if (!obfuscate && !zero_stale_data)
+ 			goto write;
+ 
++		/* Zero unused part of interior nodes */
++		if (zero_stale_data) {
++			xfs_da_intnode_t *node = iocur_top->data;
++			int magic = be16_to_cpu(node->hdr.info.magic);
++
++			if (magic == XFS_DA_NODE_MAGIC ||
++			    magic == XFS_DA3_NODE_MAGIC) {
++				struct xfs_da3_icnode_hdr hdr;
++				int used;
++
++				xfs_da3_node_hdr_from_disk(&hdr, node);
++				used = xfs_da3_node_hdr_size(node);
++
++				used += hdr.count
++					* sizeof(struct xfs_da_node_entry);
++
++				if (used < mp->m_sb.sb_blocksize) {
++					memset((char *)node + used, 0,
++						mp->m_sb.sb_blocksize - used);
++					iocur_top->need_crc = 1;
++				}
++			}
++		}
++
++		/* Handle leaf nodes */
+ 		dp = iocur_top->data;
+ 		switch (btype) {
+ 		case TYP_DIR2:
+-- 
+1.7.9.5
+
