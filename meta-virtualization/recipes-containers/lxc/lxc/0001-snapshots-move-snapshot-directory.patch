@@ -1,0 +1,819 @@
+From 18aa217bb187b551206fe66075229ba382a1dbe4 Mon Sep 17 00:00:00 2001
+From: Serge Hallyn <serge.hallyn@ubuntu.com>
+Date: Tue, 27 May 2014 16:24:06 -0500
+Subject: [PATCH] snapshots: move snapshot directory
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Originally we kept snapshots under /var/lib/lxcsnaps.  If a
+separate btrfs is mounted at /var/lib/lxc, then we can't
+make btrfs snapshots under /var/lib/lxcsnaps.
+
+This patch moves the default directory to /var/lib/lxc/c/snaps.
+If /var/lib/lxcsnaps already exists, then we continue to use that.
+
+add c->destroy_with_snapshots() and c->snapshot_destroy_all()
+API methods.  c->snashot_destroy_all() can be triggered from
+lxc-snapshot using '-d ALL'.  There is no command to call
+c->destroy_with_snapshots(c) as of yet.
+
+lxclock: use ".$lxcname" for container lock files
+that way we can use /run/lock/lxc/$lxcpath/$lxcname/snaps as a
+directory when locking snapshots without having to worry about
+/run/lock//lxc/$lxcpath/$lxcname being a file.
+
+destroy: split off a container_destroy
+container_destroy() doesn't check for snapshots, so snapshot_rename can
+use it.  api_destroy() now does check for snapshots (previously it only
+checked for fs - i.e. overlayfs/aufs - snapshots).
+
+Add destroy to the manpage, as it was previously undocumented.
+
+Update snapshot testcase accordingly.
+
+[ rebased in the face of commits 840f05df and 7e36f87e. ]
+
+Signed-off-by: Serge Hallyn <serge.hallyn@ubuntu.com>
+Acked-by: S.Çağlar Onur <caglar@10ur.org>
+Acked-by: Stéphane Graber <stgraber@ubuntu.com>
+---
+ doc/lxc-snapshot.sgml.in |   13 +++
+ src/lxc/bdev.c           |    6 +-
+ src/lxc/lxc_snapshot.c   |   11 ++-
+ src/lxc/lxccontainer.c   |  217 ++++++++++++++++++++++++++++++++++++++--------
+ src/lxc/lxccontainer.h   |   24 ++++-
+ src/lxc/lxclock.c        |   10 +--
+ src/lxc/utils.c          |   39 +++++++--
+ src/lxc/utils.h          |    2 +-
+ src/tests/snapshot.c     |   29 ++-----
+ 9 files changed, 271 insertions(+), 80 deletions(-)
+
+diff --git a/doc/lxc-snapshot.sgml.in b/doc/lxc-snapshot.sgml.in
+index 4b70279..029534e 100644
+--- a/doc/lxc-snapshot.sgml.in
++++ b/doc/lxc-snapshot.sgml.in
+@@ -55,6 +55,11 @@ Foundation, Inc., 51 Franklin Street, Fi
+     <cmdsynopsis>
+       <command>lxc-snapshot</command>
+       <arg choice="req">-n, --name <replaceable>name</replaceable></arg>
++      <arg choice="req">-d, -destroy <replaceable>snapshot-name</replaceable></arg>
++    </cmdsynopsis>
++    <cmdsynopsis>
++      <command>lxc-snapshot</command>
++      <arg choice="req">-n, --name <replaceable>name</replaceable></arg>
+       <arg choice="req">-L, --list </arg>
+       <arg choice="opt">-C, --showcomments </arg>
+     </cmdsynopsis>
+@@ -92,6 +97,14 @@ Foundation, Inc., 51 Franklin Street, Fi
+ 	  </varlistentry>
+ 
+ 	  <varlistentry>
++	    <term> <option>-d,--destroy snapshot-name</option> </term>
++	   <listitem>
++	    <para> Destroy the named snapshot.  If the named snapshot is ALL, then all snapshots
++	    will be destroyed.</para>
++	   </listitem>
++	  </varlistentry>
++
++	  <varlistentry>
+ 	    <term> <option>-L,--list </option> </term>
+ 	   <listitem>
+ 	    <para> List existing snapshots. </para>
+diff --git a/src/lxc/bdev.c b/src/lxc/bdev.c
+index 2ed0b96..9d29e3e 100644
+--- a/src/lxc/bdev.c
++++ b/src/lxc/bdev.c
+@@ -481,7 +481,7 @@ static int dir_clonepaths(struct bdev *o
+ 
+ static int dir_destroy(struct bdev *orig)
+ {
+-	if (lxc_rmdir_onedev(orig->src) < 0)
++	if (lxc_rmdir_onedev(orig->src, NULL) < 0)
+ 		return -1;
+ 	return 0;
+ }
+@@ -2072,7 +2072,7 @@ static int overlayfs_destroy(struct bdev
+ 	if (!upper)
+ 		return -22;
+ 	upper++;
+-	return lxc_rmdir_onedev(upper);
++	return lxc_rmdir_onedev(upper, NULL);
+ }
+ 
+ /*
+@@ -2349,7 +2349,7 @@ static int aufs_destroy(struct bdev *ori
+ 	if (!upper)
+ 		return -22;
+ 	upper++;
+-	return lxc_rmdir_onedev(upper);
++	return lxc_rmdir_onedev(upper, NULL);
+ }
+ 
+ /*
+diff --git a/src/lxc/lxc_snapshot.c b/src/lxc/lxc_snapshot.c
+index 1f8fdaf..58288e0 100644
+--- a/src/lxc/lxc_snapshot.c
++++ b/src/lxc/lxc_snapshot.c
+@@ -112,7 +112,13 @@ static int do_restore_snapshots(struct l
+ 
+ static int do_destroy_snapshots(struct lxc_container *c)
+ {
+-	if (c->snapshot_destroy(c, snapshot))
++	bool bret;
++	if (strcmp(snapshot, "ALL") == 0)
++		bret = c->snapshot_destroy_all(c);
++	else
++		bret = c->snapshot_destroy(c, snapshot);
++
++	if (bret)
+ 		return 0;
+ 
+ 	ERROR("Error destroying snapshot %s", snapshot);
+@@ -154,7 +160,8 @@ Options :\n\
+   -C, --showcomments  show snapshot comments in list\n\
+   -c, --comment=file  add file as a comment\n\
+   -r, --restore=name  restore snapshot name, i.e. 'snap0'\n\
+-  -d, --destroy=name  destroy snapshot name, i.e. 'snap0'\n",
++  -d, --destroy=name  destroy snapshot name, i.e. 'snap0'\n\
++                      use ALL to destroy all snapshots\n",
+ 	.options  = my_longopts,
+ 	.parser   = my_parser,
+ 	.checker  = NULL,
+diff --git a/src/lxc/lxccontainer.c b/src/lxc/lxccontainer.c
+index bb7b4bb..20bf600 100644
+--- a/src/lxc/lxccontainer.c
++++ b/src/lxc/lxccontainer.c
+@@ -1211,6 +1211,8 @@ static void lxcapi_clear_config(struct l
+ }
+ 
+ static bool lxcapi_destroy(struct lxc_container *c);
++static bool container_destroy(struct lxc_container *c);
++static bool get_snappath_dir(struct lxc_container *c, char *snappath);
+ /*
+  * lxcapi_create:
+  * create a container with the given parameters.
+@@ -1352,7 +1354,7 @@ out_unlock:
+ 		remove_partial(c, partial_fd);
+ out:
+ 	if (!ret && c)
+-		lxcapi_destroy(c);
++		container_destroy(c);
+ free_tpath:
+ 	if (tpath)
+ 		free(tpath);
+@@ -1958,7 +1960,7 @@ out:
+ 	fclose(f);
+ }
+ 
+-static bool has_snapshots(struct lxc_container *c)
++static bool has_fs_snapshots(struct lxc_container *c)
+ {
+ 	char path[MAXPATHLEN];
+ 	int ret, v;
+@@ -1982,10 +1984,38 @@ out:
+ 	return bret;
+ }
+ 
++static bool has_snapshots(struct lxc_container *c)
++{
++	char path[MAXPATHLEN];
++	struct dirent dirent, *direntp;
++	int count=0;
++	DIR *dir;
++
++	if (!get_snappath_dir(c, path))
++		return false;
++	dir = opendir(path);
++	if (!dir)
++		return false;
++	while (!readdir_r(dir, &dirent, &direntp)) {
++		if (!direntp)
++			break;
++
++		if (!strcmp(direntp->d_name, "."))
++			continue;
++
++		if (!strcmp(direntp->d_name, ".."))
++			continue;
++		count++;
++		break;
++	}
++	closedir(dir);
++	return count > 0;
++}
++
+ static int lxc_rmdir_onedev_wrapper(void *data)
+ {
+ 	char *arg = (char *) data;
+-	return lxc_rmdir_onedev(arg);
++	return lxc_rmdir_onedev(arg, "snaps");
+ }
+ 
+ static int do_bdev_destroy(struct lxc_conf *conf)
+@@ -2020,8 +2050,7 @@ static int bdev_destroy_wrapper(void *da
+ 	return do_bdev_destroy(conf);
+ }
+ 
+-// do we want the api to support --force, or leave that to the caller?
+-static bool lxcapi_destroy(struct lxc_container *c)
++static bool container_destroy(struct lxc_container *c)
+ {
+ 	bool bret = false;
+ 	int ret;
+@@ -2038,11 +2067,6 @@ static bool lxcapi_destroy(struct lxc_co
+ 		goto out;
+ 	}
+ 
+-	if (c->lxc_conf && has_snapshots(c)) {
+-		ERROR("container %s has dependent snapshots", c->name);
+-		goto out;
+-	}
+-
+ 	if (c->lxc_conf && c->lxc_conf->rootfs.path && c->lxc_conf->rootfs.mount) {
+ 		if (am_unpriv())
+ 			ret = userns_exec_1(c->lxc_conf, bdev_destroy_wrapper, c->lxc_conf);
+@@ -2062,7 +2086,7 @@ static bool lxcapi_destroy(struct lxc_co
+ 	if (am_unpriv())
+ 		ret = userns_exec_1(c->lxc_conf, lxc_rmdir_onedev_wrapper, path);
+ 	else
+-		ret = lxc_rmdir_onedev(path);
++		ret = lxc_rmdir_onedev(path, "snaps");
+ 	if (ret < 0) {
+ 		ERROR("Error destroying container directory for %s", c->name);
+ 		goto out;
+@@ -2074,6 +2098,37 @@ out:
+ 	return bret;
+ }
+ 
++static bool lxcapi_destroy(struct lxc_container *c)
++{
++	if (!c || !lxcapi_is_defined(c))
++		return false;
++	if (has_snapshots(c)) {
++		ERROR("Container %s has snapshots;  not removing", c->name);
++		return false;
++	}
++
++	if (has_fs_snapshots(c)) {
++		ERROR("container %s has snapshots on its rootfs", c->name);
++		return false;
++	}
++
++	return container_destroy(c);
++}
++
++static bool lxcapi_snapshot_destroy_all(struct lxc_container *c);
++
++static bool lxcapi_destroy_with_snapshots(struct lxc_container *c)
++{
++	if (!c || !lxcapi_is_defined(c))
++		return false;
++	if (!lxcapi_snapshot_destroy_all(c)) {
++		ERROR("Error deleting all snapshots");
++		return false;
++	}
++	return lxcapi_destroy(c);
++}
++
++
+ static bool set_config_item_locked(struct lxc_container *c, const char *key, const char *v)
+ {
+ 	struct lxc_config_t *config;
+@@ -2788,6 +2843,11 @@ static bool lxcapi_rename(struct lxc_con
+ 	if (!c || !c->name || !c->config_path || !c->lxc_conf)
+ 		return false;
+ 
++	if (has_fs_snapshots(c) || has_snapshots(c)) {
++		ERROR("Renaming a container with snapshots is not supported");
++		return false;
++	}
++
+ 	bdev = bdev_init(c->lxc_conf->rootfs.path, c->lxc_conf->rootfs.mount, NULL);
+ 	if (!bdev) {
+ 		ERROR("Failed to find original backing store type");
+@@ -2804,7 +2864,7 @@ static bool lxcapi_rename(struct lxc_con
+ 	if (newc && lxcapi_is_defined(newc))
+ 		lxc_container_put(newc);
+ 
+-	if (!lxcapi_destroy(c)) {
++	if (!container_destroy(c)) {
+ 		ERROR("Could not destroy existing container %s", c->name);
+ 		return false;
+ 	}
+@@ -2854,6 +2914,33 @@ static int get_next_index(const char *lx
+ 	}
+ }
+ 
++static bool get_snappath_dir(struct lxc_container *c, char *snappath)
++{
++	int ret;
++	/*
++	 * If the old style snapshot path exists, use it
++	 * /var/lib/lxc -> /var/lib/lxcsnaps
++	 */
++	ret = snprintf(snappath, MAXPATHLEN, "%ssnaps", c->config_path);
++	if (ret < 0 || ret >= MAXPATHLEN)
++		return false;
++	if (dir_exists(snappath)) {
++		ret = snprintf(snappath, MAXPATHLEN, "%ssnaps/%s", c->config_path, c->name);
++		if (ret < 0 || ret >= MAXPATHLEN)
++			return false;
++		return true;
++	}
++
++	/*
++	 * Use the new style path
++	 * /var/lib/lxc -> /var/lib/lxc + c->name + /snaps + \0
++	 */
++	ret = snprintf(snappath, MAXPATHLEN, "%s/%s/snaps", c->config_path, c->name);
++	if (ret < 0 || ret >= MAXPATHLEN)
++		return false;
++	return true;
++}
++
+ static int lxcapi_snapshot(struct lxc_container *c, const char *commentfile)
+ {
+ 	int i, flags, ret;
+@@ -2863,10 +2950,9 @@ static int lxcapi_snapshot(struct lxc_co
+ 	if (!c || !lxcapi_is_defined(c))
+ 		return -1;
+ 
+-	// /var/lib/lxc -> /var/lib/lxcsnaps \0
+-	ret = snprintf(snappath, MAXPATHLEN, "%ssnaps/%s", c->config_path, c->name);
+-	if (ret < 0 || ret >= MAXPATHLEN)
++	if (!get_snappath_dir(c, snappath))
+ 		return -1;
++
+ 	i = get_next_index(snappath, c->name);
+ 
+ 	if (mkdir_p(snappath, 0755) < 0) {
+@@ -3000,7 +3086,7 @@ static char *get_timestamp(char* snappat
+ static int lxcapi_snapshot_list(struct lxc_container *c, struct lxc_snapshot **ret_snaps)
+ {
+ 	char snappath[MAXPATHLEN], path2[MAXPATHLEN];
+-	int dirlen, count = 0, ret;
++	int count = 0, ret;
+ 	struct dirent dirent, *direntp;
+ 	struct lxc_snapshot *snaps =NULL, *nsnaps;
+ 	DIR *dir;
+@@ -3008,9 +3094,7 @@ static int lxcapi_snapshot_list(struct l
+ 	if (!c || !lxcapi_is_defined(c))
+ 		return -1;
+ 
+-	// snappath is ${lxcpath}snaps/${lxcname}/
+-	dirlen = snprintf(snappath, MAXPATHLEN, "%ssnaps/%s", c->config_path, c->name);
+-	if (dirlen < 0 || dirlen >= MAXPATHLEN) {
++	if (!get_snappath_dir(c, snappath)) {
+ 		ERROR("path name too long");
+ 		return -1;
+ 	}
+@@ -3078,7 +3162,7 @@ out_free:
+ static bool lxcapi_snapshot_restore(struct lxc_container *c, const char *snapname, const char *newname)
+ {
+ 	char clonelxcpath[MAXPATHLEN];
+-	int flags = 0,ret;
++	int flags = 0;
+ 	struct lxc_container *snap, *rest;
+ 	struct bdev *bdev;
+ 	bool b = false;
+@@ -3086,6 +3170,11 @@ static bool lxcapi_snapshot_restore(stru
+ 	if (!c || !c->name || !c->config_path)
+ 		return false;
+ 
++	if (has_fs_snapshots(c)) {
++		ERROR("container rootfs has dependent snapshots");
++		return false;
++	}
++
+ 	bdev = bdev_init(c->lxc_conf->rootfs.path, c->lxc_conf->rootfs.mount, NULL);
+ 	if (!bdev) {
+ 		ERROR("Failed to find original backing store type");
+@@ -3095,8 +3184,7 @@ static bool lxcapi_snapshot_restore(stru
+ 	if (!newname)
+ 		newname = c->name;
+ 
+-	ret = snprintf(clonelxcpath, MAXPATHLEN, "%ssnaps/%s", c->config_path, c->name);
+-	if (ret < 0 || ret >= MAXPATHLEN) {
++	if (!get_snappath_dir(c, clonelxcpath)) {
+ 		bdev_put(bdev);
+ 		return false;
+ 	}
+@@ -3111,7 +3199,7 @@ static bool lxcapi_snapshot_restore(stru
+ 	}
+ 
+ 	if (strcmp(c->name, newname) == 0) {
+-		if (!lxcapi_destroy(c)) {
++		if (!container_destroy(c)) {
+ 			ERROR("Could not destroy existing container %s", newname);
+ 			lxc_container_put(snap);
+ 			bdev_put(bdev);
+@@ -3132,21 +3220,13 @@ static bool lxcapi_snapshot_restore(stru
+ 	return b;
+ }
+ 
+-static bool lxcapi_snapshot_destroy(struct lxc_container *c, const char *snapname)
++static bool do_snapshot_destroy(const char *snapname, const char *clonelxcpath)
+ {
+-	int ret;
+-	char clonelxcpath[MAXPATHLEN];
+ 	struct lxc_container *snap = NULL;
+-
+-	if (!c || !c->name || !c->config_path)
+-		return false;
+-
+-	ret = snprintf(clonelxcpath, MAXPATHLEN, "%ssnaps/%s", c->config_path, c->name);
+-	if (ret < 0 || ret >= MAXPATHLEN)
+-		goto err;
++	bool bret = false;
+ 
+ 	snap = lxc_container_new(snapname, clonelxcpath);
+-	if (!snap || !lxcapi_is_defined(snap)) {
++	if (!snap) {
+ 		ERROR("Could not find snapshot %s", snapname);
+ 		goto err;
+ 	}
+@@ -3155,13 +3235,70 @@ static bool lxcapi_snapshot_destroy(stru
+ 		ERROR("Could not destroy snapshot %s", snapname);
+ 		goto err;
+ 	}
+-	lxc_container_put(snap);
++	bret = true;
+ 
+-	return true;
+ err:
+ 	if (snap)
+ 		lxc_container_put(snap);
+-	return false;
++	return bret;
++}
++
++static bool remove_all_snapshots(const char *path)
++{
++	DIR *dir;
++	struct dirent dirent, *direntp;
++	bool bret = true;
++
++	dir = opendir(path);
++	if (!dir) {
++		SYSERROR("opendir on snapshot path %s", path);
++		return false;
++	}
++	while (!readdir_r(dir, &dirent, &direntp)) {
++		if (!direntp)
++			break;
++		if (!strcmp(direntp->d_name, "."))
++			continue;
++		if (!strcmp(direntp->d_name, ".."))
++			continue;
++		if (!do_snapshot_destroy(direntp->d_name, path)) {
++			bret = false;
++			continue;
++		}
++	}
++
++	closedir(dir);
++
++	if (rmdir(path))
++		SYSERROR("Error removing directory %s", path);
++
++	return bret;
++}
++
++static bool lxcapi_snapshot_destroy(struct lxc_container *c, const char *snapname)
++{
++	char clonelxcpath[MAXPATHLEN];
++
++	if (!c || !c->name || !c->config_path || !snapname)
++		return false;
++
++	if (!get_snappath_dir(c, clonelxcpath))
++		return false;
++
++	return do_snapshot_destroy(snapname, clonelxcpath);
++}
++
++static bool lxcapi_snapshot_destroy_all(struct lxc_container *c)
++{
++	char clonelxcpath[MAXPATHLEN];
++
++	if (!c || !c->name || !c->config_path)
++		return false;
++
++	if (!get_snappath_dir(c, clonelxcpath))
++		return false;
++
++	return remove_all_snapshots(clonelxcpath);
+ }
+ 
+ static bool lxcapi_may_control(struct lxc_container *c)
+@@ -3321,6 +3458,9 @@ struct lxc_container *lxc_container_new(
+ {
+ 	struct lxc_container *c;
+ 
++	if (!name)
++		return NULL;
++
+ 	c = malloc(sizeof(*c));
+ 	if (!c) {
+ 		fprintf(stderr, "failed to malloc lxc_container\n");
+@@ -3367,7 +3507,7 @@ struct lxc_container *lxc_container_new(
+ 
+ 	if (ongoing_create(c) == 2) {
+ 		ERROR("Error: %s creation was not completed", c->name);
+-		lxcapi_destroy(c);
++		container_destroy(c);
+ 		lxcapi_clear_config(c);
+ 	}
+ 	c->daemonize = true;
+@@ -3392,6 +3532,7 @@ struct lxc_container *lxc_container_new(
+ 	c->wait = lxcapi_wait;
+ 	c->set_config_item = lxcapi_set_config_item;
+ 	c->destroy = lxcapi_destroy;
++	c->destroy_with_snapshots = lxcapi_destroy_with_snapshots;
+ 	c->rename = lxcapi_rename;
+ 	c->save_config = lxcapi_save_config;
+ 	c->get_keys = lxcapi_get_keys;
+@@ -3417,6 +3558,7 @@ struct lxc_container *lxc_container_new(
+ 	c->snapshot_list = lxcapi_snapshot_list;
+ 	c->snapshot_restore = lxcapi_snapshot_restore;
+ 	c->snapshot_destroy = lxcapi_snapshot_destroy;
++	c->snapshot_destroy_all = lxcapi_snapshot_destroy_all;
+ 	c->may_control = lxcapi_may_control;
+ 	c->add_device_node = lxcapi_add_device_node;
+ 	c->remove_device_node = lxcapi_remove_device_node;
+diff --git a/src/lxc/lxccontainer.h b/src/lxc/lxccontainer.h
+index d1de399..5e74c2e 100644
+--- a/src/lxc/lxccontainer.h
++++ b/src/lxc/lxccontainer.h
+@@ -286,6 +286,17 @@ struct lxc_container {
+ 	bool (*destroy)(struct lxc_container *c);
+ 
+ 	/*!
++	 * \brief Delete the container and all its snapshots.
++	 *
++	 * \param c Container.
++	 *
++	 * \return \c true on success, else \c false.
++	 *
++	 * \note Container must be stopped.
++	 */
++	bool (*destroy_with_snapshots)(struct lxc_container *c);
++
++	/*!
+ 	 * \brief Save configuaration to a file.
+ 	 *
+ 	 * \param c Container.
+@@ -649,7 +660,7 @@ struct lxc_container {
+ 	 * \brief Create a container snapshot.
+ 	 *
+ 	 * Assuming default paths, snapshots will be created as
+-	 * \c /var/lib/lxcsnaps/\<c\>/snap\<n\>
++	 * \c /var/lib/lxc/\<c\>/snaps/snap\<n\>
+ 	 * where \c \<c\> represents the container name and \c \<n\>
+ 	 * represents the zero-based snapshot number.
+ 	 *
+@@ -691,7 +702,7 @@ struct lxc_container {
+ 	 *  fail if the  snapshot is overlay-based, since the snapshots
+ 	 *  will pin the original container.
+ 	 * \note As an example, if the container exists as \c /var/lib/lxc/c1, snapname might be \c 'snap0'
+-	 *  (representing \c /var/lib/lxcsnaps/c1/snap0). If \p newname is \p c2,
++	 *  (representing \c /var/lib/lxc/c1/snaps/snap0). If \p newname is \p c2,
+ 	 *  then \c snap0 will be copied to \c /var/lib/lxc/c2.
+ 	 */
+ 	bool (*snapshot_restore)(struct lxc_container *c, const char *snapname, const char *newname);
+@@ -707,6 +718,15 @@ struct lxc_container {
+ 	bool (*snapshot_destroy)(struct lxc_container *c, const char *snapname);
+ 
+ 	/*!
++	 * \brief Destroy all the container's snapshot.
++	 *
++	 * \param c Container.
++	 *
++	 * \return \c true on success, else \c false.
++	 */
++	bool (*snapshot_destroy_all)(struct lxc_container *c);
++
++	/*!
+ 	 * \brief Determine if the caller may control the container.
+ 	 *
+ 	 * \param c Container.
+diff --git a/src/lxc/lxclock.c b/src/lxc/lxclock.c
+index 1d62729..9d1c6f4 100644
+--- a/src/lxc/lxclock.c
++++ b/src/lxc/lxclock.c
+@@ -108,8 +108,8 @@ static char *lxclock_name(const char *p,
+ 	 * $XDG_RUNTIME_DIR + "/lock/lxc/$lxcpath/$lxcname + '\0' if non-root
+ 	 */
+ 
+-	/* length of "/lock/lxc/" + $lxcpath + "/" + $lxcname + '\0' */
+-	len = strlen("/lock/lxc/") + strlen(n) + strlen(p) + 2;
++	/* length of "/lock/lxc/" + $lxcpath + "/" + "." + $lxcname + '\0' */
++	len = strlen("/lock/lxc/") + strlen(n) + strlen(p) + 3;
+ 	rundir = get_rundir();
+ 	if (!rundir)
+ 		return NULL;
+@@ -129,7 +129,7 @@ static char *lxclock_name(const char *p,
+ 	ret = mkdir_p(dest, 0755);
+ 	if (ret < 0) {
+ 		/* fall back to "/tmp/" $(id -u) "/lxc/" $lxcpath / $lxcname + '\0' */
+-		int l2 = 33 + strlen(n) + strlen(p);
++		int l2 = 34 + strlen(n) + strlen(p);
+ 		if (l2 > len) {
+ 			char *d;
+ 			d = realloc(dest, l2);
+@@ -147,9 +147,9 @@ static char *lxclock_name(const char *p,
+ 			free(rundir);
+ 			return NULL;
+ 		}
+-		ret = snprintf(dest, len, "/tmp/%d/lxc/%s/%s", geteuid(), p, n);
++		ret = snprintf(dest, len, "/tmp/%d/lxc/%s/.%s", geteuid(), p, n);
+ 	} else
+-		ret = snprintf(dest, len, "%s/lock/lxc/%s/%s", rundir, p, n);
++		ret = snprintf(dest, len, "%s/lock/lxc/%s/.%s", rundir, p, n);
+ 
+ 	free(rundir);
+ 
+diff --git a/src/lxc/utils.c b/src/lxc/utils.c
+index 173afa8..a32829d 100644
+--- a/src/lxc/utils.c
++++ b/src/lxc/utils.c
+@@ -46,12 +46,14 @@
+ 
+ lxc_log_define(lxc_utils, lxc);
+ 
+-static int _recursive_rmdir_onedev(char *dirname, dev_t pdev)
++static int _recursive_rmdir_onedev(char *dirname, dev_t pdev,
++				   const char *exclude, int level)
+ {
+ 	struct dirent dirent, *direntp;
+ 	DIR *dir;
+ 	int ret, failed=0;
+ 	char pathname[MAXPATHLEN];
++	bool hadexclude = false;
+ 
+ 	dir = opendir(dirname);
+ 	if (!dir) {
+@@ -76,6 +78,29 @@ static int _recursive_rmdir_onedev(char 
+ 			failed=1;
+ 			continue;
+ 		}
++
++		if (!level && exclude && !strcmp(direntp->d_name, exclude)) {
++			ret = rmdir(pathname);
++			if (ret < 0) {
++				switch(errno) {
++				case ENOTEMPTY:
++					INFO("Not deleting snapshots");
++					hadexclude = true;
++					break;
++				case ENOTDIR:
++					ret = unlink(pathname);
++					if (ret)
++						INFO("%s: failed to remove %s", __func__, pathname);
++					break;
++				default:
++					SYSERROR("%s: failed to rmdir %s", __func__, pathname);
++					failed = 1;
++					break;
++				}
++			}
++			continue;
++		}
++
+ 		ret = lstat(pathname, &mystat);
+ 		if (ret) {
+ 			ERROR("%s: failed to stat %s", __func__, pathname);
+@@ -85,7 +110,7 @@ static int _recursive_rmdir_onedev(char 
+ 		if (mystat.st_dev != pdev)
+ 			continue;
+ 		if (S_ISDIR(mystat.st_mode)) {
+-			if (_recursive_rmdir_onedev(pathname, pdev) < 0)
++			if (_recursive_rmdir_onedev(pathname, pdev, exclude, level+1) < 0)
+ 				failed=1;
+ 		} else {
+ 			if (unlink(pathname) < 0) {
+@@ -96,8 +121,10 @@ static int _recursive_rmdir_onedev(char 
+ 	}
+ 
+ 	if (rmdir(dirname) < 0) {
+-		ERROR("%s: failed to delete %s", __func__, dirname);
+-		failed=1;
++		if (!hadexclude) {
++			ERROR("%s: failed to delete %s", __func__, dirname);
++			failed=1;
++		}
+ 	}
+ 
+ 	ret = closedir(dir);
+@@ -110,7 +137,7 @@ static int _recursive_rmdir_onedev(char 
+ }
+ 
+ /* returns 0 on success, -1 if there were any failures */
+-extern int lxc_rmdir_onedev(char *path)
++extern int lxc_rmdir_onedev(char *path, const char *exclude)
+ {
+ 	struct stat mystat;
+ 
+@@ -119,7 +146,7 @@ extern int lxc_rmdir_onedev(char *path)
+ 		return -1;
+ 	}
+ 
+-	return _recursive_rmdir_onedev(path, mystat.st_dev);
++	return _recursive_rmdir_onedev(path, mystat.st_dev, exclude, 0);
+ }
+ 
+ static int mount_fs(const char *source, const char *target, const char *type)
+diff --git a/src/lxc/utils.h b/src/lxc/utils.h
+index 050102c..a84b489 100644
+--- a/src/lxc/utils.h
++++ b/src/lxc/utils.h
+@@ -34,7 +34,7 @@
+ #include "config.h"
+ 
+ /* returns 1 on success, 0 if there were any failures */
+-extern int lxc_rmdir_onedev(char *path);
++extern int lxc_rmdir_onedev(char *path, const char *exclude);
+ extern void lxc_setup_fs(void);
+ extern int get_u16(unsigned short *val, const char *arg, int base);
+ extern int mkdir_p(const char *dir, mode_t mode);
+diff --git a/src/tests/snapshot.c b/src/tests/snapshot.c
+index 09cee1a..21acd3e 100644
+--- a/src/tests/snapshot.c
++++ b/src/tests/snapshot.c
+@@ -32,28 +32,21 @@
+ static void try_to_remove(void)
+ {
+ 	struct lxc_container *c;
+-	char snappath[1024];
+ 	c = lxc_container_new(RESTNAME, NULL);
+ 	if (c) {
+-		if (c->is_defined(c))
+-			c->destroy(c);
+-		lxc_container_put(c);
+-	}
+-	snprintf(snappath, 1024, "%ssnaps/%s", lxc_get_global_config_item("lxc.lxcpath"), MYNAME);
+-	c = lxc_container_new("snap0", snappath);
+-	if (c) {
++		c->snapshot_destroy_all(c);
+ 		if (c->is_defined(c))
+ 			c->destroy(c);
+ 		lxc_container_put(c);
+ 	}
+ 	c = lxc_container_new(MYNAME2, NULL);
+ 	if (c) {
+-		if (c->is_defined(c))
+-			c->destroy(c);
++		c->destroy_with_snapshots(c);
+ 		lxc_container_put(c);
+ 	}
+ 	c = lxc_container_new(MYNAME, NULL);
+ 	if (c) {
++		c->snapshot_destroy_all(c);
+ 		if (c->is_defined(c))
+ 			c->destroy(c);
+ 		lxc_container_put(c);
+@@ -77,7 +70,7 @@ int main(int argc, char *argv[])
+ 
+ 	if (c->is_defined(c)) {
+ 		fprintf(stderr, "%d: %s thought it was defined\n", __LINE__, MYNAME);
+-		(void) c->destroy(c);
++		(void) c->destroy_with_snapshots(c);
+ 	}
+ 	if (!c->set_config_item(c, "lxc.network.type", "empty")) {
+ 		fprintf(stderr, "%s: %d: failed to set network type\n", __FILE__, __LINE__);
+@@ -95,11 +88,11 @@ int main(int argc, char *argv[])
+ 		goto err;
+ 	}
+ 
+-	// rootfs should be ${lxcpath}snaps/${lxcname}/snap0/rootfs
++	// rootfs should be ${lxcpath}${lxcname}/snaps/snap0/rootfs
+ 	struct stat sb;
+ 	int ret;
+ 	char path[1024];
+-	snprintf(path, 1024, "%ssnaps/%s/snap0/rootfs", lxc_get_global_config_item("lxc.lxcpath"), MYNAME);
++	snprintf(path, 1024, "%s/%s/snaps/snap0/rootfs", lxc_get_global_config_item("lxc.lxcpath"), MYNAME);
+ 	ret = stat(path, &sb);
+ 	if (ret != 0) {
+ 		fprintf(stderr, "%s: %d: snapshot was not actually created\n", __FILE__, __LINE__);
+@@ -169,17 +162,7 @@ int main(int argc, char *argv[])
+ 		goto err;
+ 	}
+ 
+-	if (!c2->destroy(c2)) {
+-		fprintf(stderr, "%s: %d: failed to destroy container\n", __FILE__, __LINE__);
+-		goto err;
+-	}
+-
+ good:
+-	if (!c->destroy(c)) {
+-		fprintf(stderr, "%s: %d: failed to destroy container\n", __FILE__, __LINE__);
+-		goto err;
+-	}
+-
+ 	lxc_container_put(c);
+ 	try_to_remove();
+ 
+-- 
+1.7.9.5
+
