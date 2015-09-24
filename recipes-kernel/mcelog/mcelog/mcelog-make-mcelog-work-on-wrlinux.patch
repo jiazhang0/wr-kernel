@@ -1,0 +1,54 @@
+mcelog: make mcelog work on wrlinux
+
+wrlinux use the other function to start or stop deamon.
+
+Signed-off-by: Li Wang <li.wang@windriver.com>
+---
+ mcelog.init |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/mcelog.init b/mcelog.init
+index 0abe786..f56bc0b 100755
+--- a/mcelog.init
++++ b/mcelog.init
+@@ -16,6 +16,9 @@
+ #                       This logs and handles CPU hardware errors on x86 systems.
+ ### END INIT INFO
+ 
++# Source function library.
++. /etc/init.d/functions
++
+ # put this is sysconfig
+ 
+ # mcelog mode
+@@ -53,7 +56,7 @@ case "$1" in
+ start)
+ 	if [ "$MCELOG_MODE" = "daemon" ] ; then
+ 		echo "Starting mcelog daemon"
+-		startproc $MCELOG --daemon $MCELOG_OPTIONS
++		start-stop-daemon --start --exec "$MCELOG" -- "$MCELOG_OPTIONS"
+ 	elif [ -f "$TRIGGER" ] ; then
+ 		echo $MCELOG > "$TRIGGER"
+ 	else
+@@ -63,7 +66,7 @@ start)
+ stop)
+ 	if [ "$MCELOG_MODE" = "daemon" ] ; then
+ 		echo "Stopping mcelog"
+-		killproc -TERM $MCELOG
++		start-stop-daemon --stop --quiet --exec "$MCELOG" -- "-TERM"
+ 	elif [ "$MCELOG_MODE" = "trigger" -a -f "$TRIGGER" ]; then 
+ 		echo "" > "$TRIGGER"
+ 	else
+@@ -86,7 +89,8 @@ force-reload)
+ status)
+ 	if [ "$MCELOG_MODE" = "daemon" ] ; then
+ 		echo "Checking for mcelog"
+-		checkproc $MCELOG
++		status $MCELOG
++		exit $?
+ 	fi
+ 	;;
+ *)
+-- 
+1.7.9.5
+

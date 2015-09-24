@@ -18,6 +18,7 @@ PR = "r1"
 
 SRC_URI = "git://git.kernel.org/pub/scm/utils/cpu/mce/mcelog.git \
            file://mcelog-debash.patch \
+           file://mcelog-make-mcelog-work-on-wrlinux.patch \
         "
 
 SRCREV = "eba9d233470e9cfdc0c40a00f67feb3e1dcae40f"
@@ -27,3 +28,8 @@ COMPATIBLE_HOST = '(i.86|x86_64).*-linux'
 S ="${WORKDIR}/git"
 
 inherit autotools-brokensep
+
+do_install_append () {
+	install -d ${D}${sysconfdir}/init.d
+	install -m 0755 ${S}/mcelog.init ${D}${sysconfdir}/init.d/mcelog
+}
