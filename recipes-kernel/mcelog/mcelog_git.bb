@@ -33,3 +33,12 @@ do_install_append () {
 	install -d ${D}${sysconfdir}/init.d
 	install -m 0755 ${S}/mcelog.init ${D}${sysconfdir}/init.d/mcelog
 }
+
+PACKAGES =+ "${PN}-mcelog_init"
+
+FILES_${PN}-mcelog_init = "${sysconfdir}/init.d/mcelog"
+
+INITSCRIPT_PACKAGES = "${PN}-mcelog_init"
+
+INITSCRIPT_NAME_${PN}-mcelog_init = "mcelog"
+
