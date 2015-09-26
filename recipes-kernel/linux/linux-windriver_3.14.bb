@@ -30,6 +30,6 @@ COMPATIBLE_MACHINE ?= '${@ machine_ktype_compatibility(d,"${LINUX_KERNEL_TYPE}")
 # require recipes-kernel/linux/linux-tools.inc
 
 KMETA ?= "meta"
-KSRC_linux_windriver_3_14 ?= "${THISDIR}/../../git/kernel-3.14.x.git"
+KSRC_linux_windriver_3_14 ?= "${THISDIR}/../../git/kernel-3.14.x-LB21_7.0_RCPL0010"
 SRC_URI = "git://${KSRC_linux_windriver_3_14};protocol=file;nocheckout=1;branch=${KBRANCH},${KMETA};name=machine,meta${EXTRA_KERNEL_SRC_URI}"
 

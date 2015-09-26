@@ -5,6 +5,13 @@
 	url = ../../kernel-3.14.x
 	optional = true
 
+[subgit "kernel-3.14.x-LB21_7.0_RCPL0010"]
+       bare = true
+       clone-or-force-pull-only = true
+       path = git/kernel-3.14.x-LB21_7.0_RCPL0010
+       url = ../../kernel-3.14.x-LB21_7.0_RCPL0010
+       optional = true
+
 [subgit "windriver-kernel-tools"]
         bare = true
         clone-or-force-pull-only = false
