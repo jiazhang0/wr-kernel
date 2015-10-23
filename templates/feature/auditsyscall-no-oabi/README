@@ -1,0 +1,26 @@
+
+                                 auditsyscall-no-oabi
+                                  ------
+
+1. Introduction
+----------------
+
+The auditsyscall-no-oabi template provides a mechanism to audit system call
+on ARM in kernel on the target. According kernel Kconfig, if CONFIG_OABI_COMPAT=y,
+Audit System call can not be enabled.
+
+
+2. Usage
+--------
+
+Add this template using the following configure script option.
+ie.: --with-template=feature/auditsyscall-no-oabi
+
+This will ensure the required kernel config values are set.
+
+
+3. Installation
+----------------
+
+This template will include audit system call on arm in kernel image.
+

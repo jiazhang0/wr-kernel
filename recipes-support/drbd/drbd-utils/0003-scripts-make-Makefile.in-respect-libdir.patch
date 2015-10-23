@@ -1,0 +1,42 @@
+From 945503db9bbd55e20f00765f1804b5b475862993 Mon Sep 17 00:00:00 2001
+From: Mark Asselstine <mark.asselstine@windriver.com>
+Date: Thu, 10 Jan 2013 12:20:24 -0500
+Subject: [PATCH 3/3] scripts: make Makefile.in respect libdir
+
+scripts were ignoring the value set for libdir during
+configure. Update scripts Makefile.in respect the value passed in to
+configure via --libdir.
+
+Signed-off-by: Mark Asselstine <mark.asselstine@windriver.com>
+---
+ scripts/Makefile.in | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/scripts/Makefile.in b/scripts/Makefile.in
+index 114c772..b1574a6 100644
+--- a/scripts/Makefile.in
++++ b/scripts/Makefile.in
+@@ -34,7 +34,8 @@ sysconfdir = @sysconfdir@
+ BASH_COMPLETION_SUFFIX = @BASH_COMPLETION_SUFFIX@
+ UDEV_RULE_SUFFIX = @UDEV_RULE_SUFFIX@
+ INITDIR = @INITDIR@
+-LIBDIR = @prefix@/lib/@PACKAGE_TARNAME@
++LIBDIR = @libdir@/@PACKAGE_TARNAME@
++OCF_LIBDIR = @libdir@/ocf
+ LN_S = @LN_S@
+ 
+ # features enabled or disabled by configure
+@@ -104,8 +105,8 @@ ifeq ($(WITH_PACEMAKER),yes)
+ 	install -m 755 crm-fence-peer.sh $(DESTDIR)$(LIBDIR)
+ 	( set -e ; cd $(DESTDIR)$(LIBDIR) ;\
+ 	  $(LN_S) -f crm-fence-peer.sh crm-unfence-peer.sh ; )
+-	mkdir -p $(DESTDIR)/usr/lib/ocf/resource.d/linbit
+-	install -m 755 drbd.ocf $(DESTDIR)/usr/lib/ocf/resource.d/linbit/drbd
++	mkdir -p $(DESTDIR)/$(OCF_LIBDIR)/resource.d/linbit
++	install -m 755 drbd.ocf $(DESTDIR)/$(OCF_LIBDIR)/resource.d/linbit/drbd
+ endif
+ 
+ install-rgmanager:
+-- 
+1.9.1
+

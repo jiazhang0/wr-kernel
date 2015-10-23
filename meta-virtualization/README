@@ -1,0 +1,36 @@
+meta-virtualization
+===================
+
+This layer provides lxc package build for Wind River Linux.  It
+is required by most other layers that Wind River provides.
+
+
+Dependencies
+------------
+This layer depends on the oe-core version supplied with Wind River Linux.
+
+
+Maintenance
+-----------
+This layer is maintained by Wind River Systems, Inc.
+Contact <support@windriver.com> or your support representative for more
+information on submitting changes.
+
+
+Building the meta-virtualization layer
+--------------------------------------
+This layer should be added to the wr-kernel/conf/layer.conf file.
+
+
+License
+-------
+Copyright (C) 2013 Wind River Systems, Inc.
+
+The right to copy, distribute or otherwise make use of this software may
+be licensed only pursuant to the terms of an applicable Wind River license
+agreement.  No license to Wind River intellectual properly rights is granted
+herein.  All rights not licensed by Wind River are reserved by Wind River.
+
+Source code included in the tree for individual recipes is under the LICENSE
+stated in each recipe (.bb file) unless otherwise stated.
+

@@ -1,0 +1,60 @@
+From 0d2b4832a9d61d38a379a716e8e0d816bddab4b4 Mon Sep 17 00:00:00 2001
+From: Roy Li <rongqing.li@windriver.com>
+Date: Thu, 27 Nov 2014 08:45:09 +0800
+Subject: [PATCH] qemu: add tun devices to cgroup ACL
+
+Upstream-Status: Pending
+
+When systemd is used as init, CGroup will be enabled by default, and
+lead to virsh unable to start VM(which is using the tun/tap), since
+virsh can not access /dev/net/tun device
+
+Signed-off-by: Roy Li <rongqing.li@windriver.com>
+---
+ src/qemu/qemu.conf                 | 3 ++-
+ src/qemu/qemu_cgroup.c             | 2 +-
+ src/qemu/test_libvirtd_qemu.aug.in | 1 +
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/qemu/qemu.conf b/src/qemu/qemu.conf
+index c6db568..225cd0f 100644
+--- a/src/qemu/qemu.conf
++++ b/src/qemu/qemu.conf
+@@ -272,7 +272,8 @@
+ #    "/dev/null", "/dev/full", "/dev/zero",
+ #    "/dev/random", "/dev/urandom",
+ #    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+-#    "/dev/rtc","/dev/hpet", "/dev/vfio/vfio"
++#    "/dev/rtc","/dev/hpet", "/dev/vfio/vfio",
++#    "/dev/net/tun"
+ #]
+ #
+ # RDMA migration requires the following extra files to be added to the list:
+diff --git a/src/qemu/qemu_cgroup.c b/src/qemu/qemu_cgroup.c
+index 0e94cae..7c15c07 100644
+--- a/src/qemu/qemu_cgroup.c
++++ b/src/qemu/qemu_cgroup.c
+@@ -45,7 +45,7 @@ static const char *const defaultDeviceACL[] = {
+     "/dev/random", "/dev/urandom",
+     "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+     "/dev/rtc", "/dev/hpet", "/dev/vfio/vfio",
+-    NULL,
++    "/dev/net/tun", NULL,
+ };
+ #define DEVICE_PTY_MAJOR 136
+ #define DEVICE_SND_MAJOR 116
+diff --git a/src/qemu/test_libvirtd_qemu.aug.in b/src/qemu/test_libvirtd_qemu.aug.in
+index 30fd27e..2ab7a8d 100644
+--- a/src/qemu/test_libvirtd_qemu.aug.in
++++ b/src/qemu/test_libvirtd_qemu.aug.in
+@@ -48,6 +48,7 @@ module Test_libvirtd_qemu =
+     { "9" = "/dev/rtc" }
+     { "10" = "/dev/hpet" }
+     { "11" = "/dev/vfio/vfio" }
++    { "12" = "/dev/net/tun" }
+ }
+ { "save_image_format" = "raw" }
+ { "dump_image_format" = "raw" }
+-- 
+2.1.0
+

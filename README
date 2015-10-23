@@ -1,0 +1,61 @@
+wr-kernel: Wind River kernel layer
+----------------------------------
+
+This layer:
+
+  - adds core kernel support on top of linux-yocto for boards supported by
+    Wind River
+  - contains packages that are coupled to the kernel version
+  - contains task sets and configurations related to the kernel
+  - includes the nested 'kernel-dev' layer for local clones and externalsrc
+    development
+
+
+Dependencies
+------------
+This layer depends on wr-base, oe-core and meta-networking layer which are
+supplied with Wind River Linux.
+
+
+Maintenance
+-----------
+This layer is maintained by Wind River Systems, Inc.
+Contact <support@windriver.com> or your support representative for more
+information on submitting changes.
+
+
+Building the wr-kernel layer
+----------------------------
+This layer and a corresponding BSP layer should be added to bblayers.conf.
+This is done automatically when using the Wind River configure wrapper.
+
+Note: The linux-yocto* recipes are superseded by the linux-windriver*
+recipes when using this layer.  The linux-yocto* recipes are disabled
+to avoid confusion.
+
+If you are not using the Wind River configure wrapper, you will need to
+specify the kernel type to build.  This is done using the kernel type
+enabled variable KTYPE_ENABLED.  The value of this variable is specific
+to the BSP you have configured, see the BSP for a list of supported
+kernel types, TARGET_SUPPORTED_KTYPES.
+
+Alternatively you can disable the machine validation by manually
+setting the following in your local.conf:
+
+   COMPATIBLE_MACHINE_mybsp = "mybsp"
+
+Where mybsp is the machine you have configured.  This is not the
+recommended configuration.
+
+License
+-------
+Copyright (C) 2012-2013 Wind River Systems, Inc.
+
+The right to copy, distribute or otherwise make use of this software may
+be licensed only pursuant to the terms of an applicable Wind River license
+agreement.  No license to Wind River intellectual properly rights is granted
+herein.  All rights not licensed by Wind River are reserved by Wind River.
+
+Source code included in the tree for individual recipes is under the LICENSE
+stated in each recipe (.bb file) unless otherwise stated.
+
