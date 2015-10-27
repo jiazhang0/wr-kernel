@@ -1,5 +1,12 @@
 SUMMARY = "OpenvSwitch"
-DESCRIPTION = "Open vSwitch is a production quality, multilayer virtual switch licensed under the open source Apache 2.0 license. It is designed to enable massive network automation through programmatic extension, while still supporting standard management interfaces and protocols (e.g. NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag)"
+DESCRIPTION = "\
+	Open vSwitch is a production quality, multilayer virtual switch \
+	licensed under the open source Apache 2.0 license. It is designed \
+	to enable massive network automation through programmatic extension, \
+	while still supporting standard management interfaces and protocols \
+	(e.g. NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag) \
+	"
+
 HOMEPAGE = "http://openvswitch.org/"
 SECTION = "networking"
 LICENSE = "Apache-2"
@@ -7,80 +14,60 @@ LICENSE = "Apache-2"
 DEPENDS += "bridge-utils openssl python perl"
 
 RDEPENDS_${PN} += "util-linux-uuidgen util-linux-libuuid coreutils \
-	       python perl perl-module-strict ${PN}-switch ${PN}-controller"
+	python perl perl-module-strict ${PN}-switch ${PN}-controller \
+        bash"
 RDEPENDS_${PN}-controller = "${PN} lsb ${PN}-pki"
 RDEPENDS_${PN}-switch = "${PN} openssl procps util-linux-uuidgen"
 RDEPENDS_${PN}-pki = "${PN}"
 RDEPENDS_${PN}-brcompat = "${PN} ${PN}-switch"
-RDEPENDS_${PN}-testing = "${PN} python-twisted-core python-twisted-web python-twisted-protocols python-zopeinterface"
-RRECOMMENDS_${PN} += "kernel-module-openvswitch"
-
-RDEPENDS_${PN}-ptest += "python-logging python-syslog python-argparse python-io \
-                     python-fcntl python-shell python-lang python-xml python-math \
-                     python-datetime python-netclient python sed"
 
 # Some installers will fail because of an install order based on
 # rdeps.  E.g. ovs-pki calls sed in the postinstall.  sed may be
 # queued for install later.
 RDEPENDS_${PN} += "sed gawk grep"
 
-SRC_URI = "http://openvswitch.org/releases/openvswitch-${PV}.tar.gz \
+SRC_URI = "\
 	file://openvswitch-switch \
 	file://openvswitch-switch-setup \
 	file://openvswitch-controller \
 	file://openvswitch-controller-setup \
 	file://openvswitch-add-target-python-handling.patch \
 	file://openvswitch-add-target-perl-handling.patch \
-	file://openvswitch-add-more-target-python-substitutions.patch \
-	file://openvswitch-ovsdb-automake-mkdir-ovsdb.patch \
-	file://openvswitch-add-ptest.patch \
-	file://run-ptest \
 	"
 
-SRC_URI[md5sum] = "430ff6d1e1fc81e9c5ebc2e641cfc953"
-SRC_URI[sha256sum] = "875429b052c4001815b6cb38616c7a6cb212df4bba74602164ee0a99b172079b"
-
-LIC_FILES_CHKSUM = "file://COPYING;md5=e03b0d9c4115c44518594e5618e653f8"
+EXTRA_OECONF += "\
+	TARGET_PYTHON=${bindir}/python \
+	TARGET_PERL=${bindir}/perl \
+	"
+CONFIGUREOPT_DEPTRACK = ""
 
 # Don't compile kernel modules by default since it heavily depends on
 # kernel version. Use the in-kernel module for now.
 # distro layers can enable with EXTRA_OECONF_pn_openvswitch += ""
 # EXTRA_OECONF = "--with-linux=${STAGING_KERNEL_DIR} KARCH=${TARGET_ARCH}"
 
-EXTRA_OECONF += "TARGET_PYTHON=${bindir}/python \
-                 TARGET_PERL=${bindir}/perl \
-                "
-CONFIGUREOPT_DEPTRACK = ""
-
 ALLOW_EMPTY_${PN}-pki = "1"
-PACKAGES =+ "${PN}-controller ${PN}-switch ${PN}-brcompat ${PN}-pki ${PN}-testing"
+PACKAGES =+ "${PN}-controller ${PN}-switch ${PN}-brcompat ${PN}-pki"
 
-FILES_${PN}-controller = "${sysconfdir}/init.d/openvswitch-controller \
+FILES_${PN}-controller = "\
+	${sysconfdir}/init.d/openvswitch-controller \
 	${sysconfdir}/default/openvswitch-controller \
 	${sysconfdir}/openvswitch-controller \
-	${bindir}/ovs-controller"
+	${bindir}/ovs-controller \
+	"
 
 FILES_${PN}-brcompat = "${sbindir}/ovs-brcompatd"
 
-FILES_${PN}-switch = "${sysconfdir}/init.d/openvswitch-switch \
-		   ${sysconfdir}/default/openvswitch-switch \
-		   "
+FILES_${PN}-switch = "\
+	${sysconfdir}/init.d/openvswitch-switch \
+	${sysconfdir}/default/openvswitch-switch \
+	"
+
 # silence a warning
 FILES_${PN} += "${datadir}/ovsdbmonitor"
 FILES_${PN} += "/run"
-FILES_${PN}-testing = "${bindir}/ovs-test \
-                       ${bindir}/ovs-vlan-test \
-                       ${bindir}/ovs-l3ping \
-                       ${PYTHON_SITEPACKAGES_DIR}/ovstest/* \
-"
 
-inherit autotools update-rc.d ptest python-dir
-
-EXTRA_OEMAKE += "TEST_DEST=${D}${PTEST_PATH} TEST_ROOT=${PTEST_PATH}"
-
-do_install_ptest() {
-	oe_runmake test-install
-}
+inherit autotools update-rc.d
 
 INITSCRIPT_PACKAGES = "${PN}-switch ${PN}-controller"
 INITSCRIPT_NAME_${PN}-switch = "openvswitch-switch"
@@ -100,15 +87,9 @@ do_install_append() {
 	install -m 755 ${WORKDIR}/openvswitch-switch ${D}/${sysconfdir}/init.d/openvswitch-switch
 	true || rm -fr ${D}/${datadir}/${PN}/pki
 
-	install -m 0755 -d ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest
-	install -m 0644 ${S}/python/ovstest/args.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/args.py
-	install -m 0644 ${S}/python/ovstest/tests.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/tests.py
-	install -m 0644 ${S}/python/ovstest/__init__.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/__init__.py
-	install -m 0644 ${S}/python/ovstest/rpcserver.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/rpcserver.py
-	install -m 0644 ${S}/python/ovstest/tcp.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/tcp.py
-	install -m 0644 ${S}/python/ovstest/udp.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/udp.py
-	install -m 0644 ${S}/python/ovstest/util.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/util.py
-	install -m 0644 ${S}/python/ovstest/vswitch.py ${D}/${PYTHON_SITEPACKAGES_DIR}/ovstest/vswitch.py
+	install -d ${D}/${sysconfdir}/init.d/
+
+	oe_runmake modules_install INSTALL_MOD_PATH=${D}
 }
 
 pkg_postinst_${PN}-pki () {
