@@ -221,22 +221,15 @@ python do_deploy_post() {
     deploy = d.getVar('DEPLOY_DIR_IMAGE', True)
     wrlexport = d.getVar('WRL_EXPORT_DIR', True)
     machine = d.getVar('MACHINE', True)
-    imgname = d.getVar('KERNEL_IMAGE_SYMLINK_NAME', True)
-    alt_imgname = d.getVar('KERNEL_ALT_IMAGE_SYMLINK_NAME', True)
     suffix = "-WR%s%s_%s" % (
         d.getVar('WRLINUX_VERSION', True),
         d.getVar('WRLINUX_EXTRAVERSION', True),
         d.getVar('LINUX_KERNEL_TYPE', True))
 
-    target = "%s/%s.bin" % (deploy, imgname)
-    link = "%s/%s-%s%s" % (wrlexport, machine,
-        d.getVar('KERNEL_IMAGETYPE', True), suffix)
-    wrl_symlink(target,link,d)
-
-    target = "%s/%s.bin" % (deploy, alt_imgname)
-    link = "%s/%s-%s%s" % (wrlexport, machine,
-        d.getVar('KERNEL_ALT_IMAGETYPE', True), suffix)
-    wrl_symlink(target,link,d)
+    for type in (d.getVar('KERNEL_IMAGETYPES', True) or "").split():
+        target = "%s/%s-%s.bin" % (deploy, type, machine)
+        link = "%s/%s-%s%s" % (wrlexport, machine, type, suffix)
+        wrl_symlink(target,link,d)
 
     target = "%s/System.map-%s" % (deploy, machine)
     link = "%s/%s-System.map%s" % (wrlexport, machine, suffix)
