@@ -36,6 +36,7 @@ do_install_append() {
 	install -m 0644 intel/ibt-11-5.sfi ${D}${FWPATH}/intel
 	install -m 0644 bnx2x/bnx2x-e2-7.2.16.0.fw ${D}${FWPATH}/bnx2x
 	install -m 0644 bnx2x/bnx2x-e2-7.8.17.0.fw ${D}${FWPATH}/bnx2x
+	install -m 0644 bnx2x/bnx2x-e2-7.10.51.0.fw ${D}${FWPATH}/bnx2x
 	install -m 0644 bnx2/bnx2-rv2p-09-6.0.17.fw ${D}${FWPATH}/bnx2
 	install -m 0644 bnx2/bnx2-rv2p-09ax-6.0.17.fw ${D}${FWPATH}/bnx2
 	install -m 0644 bnx2/bnx2-mips-09-6.2.1b.fw ${D}${FWPATH}/bnx2
@@ -55,6 +56,7 @@ PACKAGES =+ "\
 	     ${PN}-bnx2x-e2-7.8.17.0 \
 	     ${PN}-bnx2-rv2p-09-6.0.17 \
 	     ${PN}-bnx2-rv2p-09ax-6.0.17 \
+             ${PN}-bnx2x-e2-7.10.51.0 \
 	     ${PN}-bnx2-mips-09-6.2.1b \
 	     ${PN}-bnx2-rv2p-06-6.0.15 \
 	     ${PN}-bnx2-mips-06-6.2.3 \
@@ -92,6 +94,10 @@ FILES_${PN}-bnx2x-e2-7.2.16.0 = " \
 
 FILES_${PN}-bnx2x-e2-7.8.17.0 = " \
   ${FWPATH}/bnx2x/bnx2x-e2-7.8.17.0.fw \
+"
+
+FILES_${PN}-bnx2x-e2-7.10.51.0 = " \
+  ${FWPATH}/bnx2x/bnx2x-e2-7.10.51.0.fw \
 "
 
 FILES_${PN}-bnx2-rv2p-09-6.0.17 = " \
