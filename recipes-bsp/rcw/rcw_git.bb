@@ -3,7 +3,7 @@
 DESCRIPTION = "Reset Control Words (RCW)"
 SECTION = "rcw"
 LICENSE = "BSD"
-PR = "r9"
+PR = "r8"
 
 LIC_FILES_CHKSUM = "file://rcw.py;beginline=8;endline=28;md5=9ba0b28922dd187b06b6c8ebcfdd208e"
 
@@ -13,10 +13,8 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 inherit deploy
 
-BR="sdk-v1.6.x"
-SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;branch=$BR;protocol=git \
-	file://0001-fsl_e500mc-Add-RCW-of-P2041-for-SRIO.patch"
-SRCREV = "261b2355e9936ecb37b61e6f58dfc48dcfb805b3"
+SRC_URI = "git://git.freescale.com/ppc/sdk/rcw.git;nobranch=1"
+SRCREV = "426f7a6535d93dac76f5125035e0938a85e778d2"
 
 COMPATIBLE_MACHINE = "(fsl-e500mc|fsl-p50xx|fsl-t4xxx|fsl-b4xxx|fsl-t2xxx)"
 
