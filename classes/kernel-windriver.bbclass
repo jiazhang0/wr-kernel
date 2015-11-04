@@ -258,12 +258,11 @@ python do_deploy_post() {
 
     kerneldevtree = d.getVar('KERNEL_DEVICETREE', True) or ""
     kernel_image_type = d.getVar('KERNEL_IMAGETYPE', True) or "uImage"
-    for dtsfile in kerneldevtree.split():
-        dtsbasename = os.path.basename(dtsfile).replace('.dts','')
+    for dtbfile in kerneldevtree.split():
         kernelimgbasename = kernel_image_type + "-"
-        dtbname = kernelimgbasename + dtsbasename + ".dtb"
+        dtbname = kernelimgbasename + dtbfile
         target = "%s/%s" % (deploy, dtbname)
-        link = "%s/%s-%s.dtb%s" % (wrlexport, machine, dtsbasename, suffix)
+        link = "%s/%s-%s%s" % (wrlexport, machine, dtbfile, suffix)
         try:
             os.remove(link)
         except:
