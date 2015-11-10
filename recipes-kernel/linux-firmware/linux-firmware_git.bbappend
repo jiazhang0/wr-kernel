@@ -4,9 +4,19 @@
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-SRCREV = "d82d3c1e5eddb811a38513a7e5b33202773f0fff"
+LIC_FILES_CHKSUM += " \
+                    file://LICENSE.i915;md5=2b0b2e0d20984affd4490ba2cba02570 \
+		   "
+
+SRCREV = "bfeee58b50208808969bb18b7f297683ba581dc1"
 
 FWPATH = "/lib/firmware"
+
+LICENSE += "\
+	& Firmware-i915 \
+"
+
+NO_GENERIC_LICENSE[Firmware-i915] = "LICENSE.i915"
 
 do_install_append() {
 	install -d ${D}${FWPATH}
@@ -28,6 +38,12 @@ do_install_append() {
 	install -m 0644 bnx2/bnx2-mips-06-6.2.3.fw ${D}${FWPATH}/bnx2
 	install -d ${D}${FWPATH}/rtl_nic
 	install -m 0644 rtl_nic/rtl8168g-2.fw ${D}${FWPATH}/rtl_nic
+	install -m 0644 LICENSE.i915 ${D}${FWPATH}
+	install -d ${D}${FWPATH}/i915
+	install -m 0644 i915/bxt_dmc_ver1*.bin ${D}${FWPATH}/i915
+	install -m 0644 i915/skl_dmc_ver1*.bin ${D}${FWPATH}/i915
+	install -m 0644 i915/skl_guc_ver1*.bin ${D}${FWPATH}/i915
+	install -m 0644 i915/skl_guc_ver4*.bin ${D}${FWPATH}/i915
 }
 
 PACKAGES =+ "\
@@ -45,7 +61,40 @@ PACKAGES =+ "\
 	     ${PN}-bnx2-rv2p-06-6.0.15 \
 	     ${PN}-bnx2-mips-06-6.2.3 \
 	     ${PN}-rtl8168g-2 \
+	     ${PN}-i915-license \
+	     ${PN}-bxt_dmc_ver1 \
+	     ${PN}-skl_dmc_ver1 \
+	     ${PN}-skl_guc_ver1 \
+	     ${PN}-skl_guc_ver4 \
 	    "
+
+LICENSE_${PN}-bxt_dmc_ver1 = "Firmware-i915"
+LICENSE_${PN}-skl_dmc_ver1 = "Firmware-i915"
+LICENSE_${PN}-skl_guc_ver1 = "Firmware-i915"
+LICENSE_${PN}-skl_guc_ver4 = "Firmware-i915"
+
+FILES_${PN}-i915-license = "${FWPATH}/LICENSE.i915"
+
+FILES_${PN}-bxt_dmc_ver1 = " \
+	${FWPATH}/i915/bxt_dmc_ver1*.bin \
+"
+
+FILES_${PN}-skl_dmc_ver1 = " \
+	${FWPATH}/i915/skl_dmc_ver1*.bin \
+"
+
+FILES_${PN}-skl_guc_ver1 = " \
+	${FWPATH}/i915/skl_guc_ver1*.bin \
+"
+
+FILES_${PN}-skl_guc_ver4 = " \
+	${FWPATH}/i915/skl_guc_ver4*.bin \
+"
+
+RDEPENDS_${PN}-bxt_dmc_ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl_dmc_ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl_guc_ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl_guc_ver4 += "${PN}-i915-license"
 
 RDEPENDS_${PN}-iwlwifi-5000-5 = "${PN}-iwlwifi-license"
 FILES_${PN}-iwlwifi-5000-5 = " \
