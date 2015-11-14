@@ -4,21 +4,6 @@
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-LICENSE = "Proprietary"
-LIC_FILES_CHKSUM = " \
-		    file://LICENSE.radeon;md5=6c7f97c6c62bdd9596d0238bb205118c \
-                    file://LICENSE.dib0700;md5=f7411825c8a555a1a3e5eab9ca773431 \
-                    file://LICENCE.xc5000;md5=1e170c13175323c32c7f4d0998d53f66 \
-                    file://LICENCE.ralink-firmware.txt;md5=ab2c269277c45476fb449673911a2dfd \
-                    file://LICENCE.qla2xxx;md5=f5ce8529ec5c17cb7f911d2721d90e91 \
-                    file://LICENCE.iwlwifi_firmware;md5=3fd842911ea93c29cd32679aa23e1c88 \
-                    file://LICENCE.i2400m;md5=14b901969e23c41881327c0d9e4b7d36 \
-                    file://LICENCE.atheros_firmware;md5=30a14c7823beedac9fa39c64fdd01a13 \
-                    file://LICENCE.agere;md5=af0133de6b4a9b2522defd5f188afd31 \
-                    file://LICENCE.rtlwifi_firmware.txt;md5=00d06cfd3eddd5a2698948ead2ad54a5 \
-                    file://LICENCE.ibt_firmware;md5=fdbee1ddfe0fb7ab0b2fcd6b454a366b \
-		   "
-
 SRCREV = "d82d3c1e5eddb811a38513a7e5b33202773f0fff"
 
 FWPATH = "/lib/firmware"
@@ -27,7 +12,6 @@ do_install_append() {
 	install -d ${D}${FWPATH}
 	install -d ${D}${FWPATH}/bnx2x
 	install -d ${D}${FWPATH}/bnx2
-	install -m 0644 LICENCE.iwlwifi_firmware ${D}${FWPATH}
 	install -m 0644 iwlwifi-5000-5.ucode ${D}${FWPATH}
 	install -m 0644 iwlwifi-8000C-13.ucode ${D}${FWPATH}
 	install -d ${D}${FWPATH}/intel
