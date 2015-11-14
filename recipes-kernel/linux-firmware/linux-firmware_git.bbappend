@@ -107,18 +107,3 @@ FILES_${PN}-bnx2-mips-06-6.2.3 = " \
 FILES_${PN}-rtl8168g-2 = " \
   ${FWPATH}/rtl_nic/rtl8168g-2.fw \
 "
-
-FILES_${PN}-bcm4329 = " \
-  /lib/firmware/brcm/brcmfmac4329-sdio.bin \
-"
-
-FILES_${PN}-bcm4330 = " \
-  /lib/firmware/brcm/brcmfmac4330-sdio.bin \
-"
-
-FILES_${PN}-bcm4334 = " \
-  /lib/firmware/brcm/brcmfmac4334-sdio.bin \
-"
-ALTERNATIVE_TARGET_linux-firmware-bcm4329[brcmfmac-sdio.bin] = "/lib/firmware/brcm/brcmfmac4329-sdio.bin"
-ALTERNATIVE_TARGET_linux-firmware-bcm4330[brcmfmac-sdio.bin] = "/lib/firmware/brcm/brcmfmac4330-sdio.bin"
-ALTERNATIVE_TARGET_linux-firmware-bcm4334[brcmfmac-sdio.bin] = "/lib/firmware/brcm/brcmfmac4334-sdio.bin"
