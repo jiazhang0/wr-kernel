@@ -22,12 +22,6 @@ do_configure() {
 
 do_install() {
         make install DESTDIR=${D}
-
-        #Use the pci.ids.gz from pciutils instead of from hwdata
-        cd ${D}${datadir}/hwdata/ && rm pci.ids && ln -s ../pci.ids.gz pci.ids.gz
-
-        #Use the usb.ids.gz from usbutils instead of from hwdata
-        cd ${D}${datadir}/hwdata/ && rm usb.ids && ln -s ../usb.ids.gz usb.ids.gz
 }
 
 PACKAGE_ARCH = "all"
