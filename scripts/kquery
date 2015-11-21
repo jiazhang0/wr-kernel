@@ -25,10 +25,10 @@ usage()
 {
 cat <<EOF
 
- kquery -h <query> <kernel repo>
+ kquery -h <query> <kernel-cache repo>
 
  
-  <kernel repo>: path to the kernel repository
+  <kernel-cache repo>: path to the kernel-cache repository
   <query>:
      cfg: list the configuration features supported by the kernel
      features-optional: list the optional features supported by the kernel
@@ -41,9 +41,13 @@ EOF
 }
 
 GIT=`which git`
+
+# For WRL8, kernel-cache is cloned to build/linux-windriver/kernel-meta
 if [ -z "$KMETA" ]; then
-    KMETA=meta
+    KMETA=kernel-meta
 fi
+
+REPO_BRANCH=WRLINUX_8_0_HEAD
 
 # command line processing
 search_dirs=
@@ -106,8 +110,8 @@ cleanup_rc_file()
 # extract kernel config file from the tree.
 if [ -n "$repo_name" ]; then
     (
-	cd $query_target;
-	$GIT show $KMETA:$KMETA/cfg/$KERNEL_RC_FILE > $KERNEL_TMP_RC_FILE
+	cd $query_target/$KMETA;
+	$GIT show $REPO_BRANCH:$KERNEL_RC_FILE > $KERNEL_TMP_RC_FILE
 	if [ $? -ne 0 ]; then
 	    echo "ERROR: could not extract kernel config options from $query_target"
 	    cleanup_rc_file
