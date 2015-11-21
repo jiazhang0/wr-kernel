@@ -11,7 +11,7 @@ RCONFLICTS_${PN} = "lm-sensors"
 # way to includes same stuff.
 ALLOW_EMPTY_${PN} = "1"
 RDEPENDS_${PN} += "lmsensors-fancontrol \
-                   lmsensors-isatools \
+                   ${@bb.utils.contains_any('TARGET_ARCH', [ 'x86_64', 'i586', 'i686' ], 'lmsensors-isatools', '', d)} \
                    lmsensors-pwmconfig \
                    lmsensors-sensord \
                    lmsensors-sensorsconfconvert \
