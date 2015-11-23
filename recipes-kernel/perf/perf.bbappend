@@ -14,3 +14,16 @@ AUDIT_DEFINES = "${@perf_feature_enabled('audit', '', 'NO_LIBAUDIT=1', d)}"
 NUMACTL_DEFINES = "${@perf_feature_enabled('numactl', '', 'NO_LIBNUMA=1', d)}"
 
 EXTRA_OEMAKE += "${AUDIT_DEFINES} ${NUMACTL_DEFINES}"
+
+do_configure_append() {
+    if [ -e "${S}/tools/perf/util/intel-pt-decoder/insn.c" ]; then
+        mkdir -p ${B}/util/intel-pt-decoder/
+        cp ${S}/tools/perf/util/intel-pt-decoder/insn.* ${B}/util/intel-pt-decoder/
+        cp ${S}/tools/perf/util/intel-pt-decoder/inat.h ${B}/util/intel-pt-decoder/
+    fi
+
+
+    if [ -e "${S}/tools/build/feature/Makefile" ]; then
+        sed -i 's,CC := $(CROSS_COMPILE)gcc -MD,CC += -MD,' ${S}/tools/build/feature/Makefile
+    fi
+}
