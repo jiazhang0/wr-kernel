@@ -40,3 +40,9 @@ do_configure_append() {
         sed -i 's,CC := $(CROSS_COMPILE)gcc -MD,CC += -MD,' ${S}/tools/build/feature/Makefile
     fi
 }
+
+do_install_append() {
+    if [ -e ${D}${libdir}/perf/perf-core/scripts/python/call-graph-from-postgresql.py ]; then
+        rm -rf ${D}${libdir}/perf/perf-core/scripts/python/call-graph-from-postgresql.py
+    fi
+}
