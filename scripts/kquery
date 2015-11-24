@@ -42,11 +42,6 @@ EOF
 
 GIT=`which git`
 
-# For WRL8, kernel-cache is cloned to build/linux-windriver/kernel-meta
-if [ -z "$KMETA" ]; then
-    KMETA=kernel-meta
-fi
-
 REPO_BRANCH=WRLINUX_8_0_HEAD
 
 # command line processing
@@ -83,7 +78,7 @@ query_target=$2
 
 if [ ! -d "$query_target" ]; then
     if [ ! -e "$query_target" ]; then
-	echo "ERROR. '$query_target' must be a kernel git repository or a rc file"
+	echo "ERROR. '$query_target' must be a kernel-cache git repository or a rc file"
 	exit 1
     fi
 fi
@@ -110,7 +105,7 @@ cleanup_rc_file()
 # extract kernel config file from the tree.
 if [ -n "$repo_name" ]; then
     (
-	cd $query_target/$KMETA;
+	cd $query_target;
 	$GIT show $REPO_BRANCH:$KERNEL_RC_FILE > $KERNEL_TMP_RC_FILE
 	if [ $? -ne 0 ]; then
 	    echo "ERROR: could not extract kernel config options from $query_target"
