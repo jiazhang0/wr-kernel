@@ -10,6 +10,8 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263\
 
 DEPENDS = "pciutils usbutils"
 
+inherit allarch
+
 #S="${WORKDIR}/${BPN}-${BP}"
 
 SRC_URI = "https://git.fedorahosted.org/cgit/hwdata.git/snapshot/${BP}.tar.gz"
@@ -24,5 +26,5 @@ do_install() {
         make install DESTDIR=${D}
 }
 
-PACKAGE_ARCH = "all"
+
 FILES_${PN} += "${libdir}/modprobe.d/dist-blacklist.conf"
