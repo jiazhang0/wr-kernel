@@ -13,9 +13,22 @@ DEPENDS += "${AUDIT_DEPENDS} ${NUMACTL_DEPENDS}"
 AUDIT_DEFINES = "${@perf_feature_enabled('audit', '', 'NO_LIBAUDIT=1', d)}"
 NUMACTL_DEFINES = "${@perf_feature_enabled('numactl', '', 'NO_LIBNUMA=1', d)}"
 
-EXTRA_OEMAKE += "${AUDIT_DEFINES} ${NUMACTL_DEFINES}"
+EXTRA_OEMAKE += '\
+     ${AUDIT_DEFINES} \
+     ${NUMACTL_DEFINES} \
+     LD="${LD} ${@bb.utils.contains("TUNE_FEATURES", "n32", \
+         bb.utils.contains("TUNE_FEATURES", "bigendian", "-m elf32btsmipn32", "-m elf32ltsmipn32", d), "", d)}" \
+ '
 
 do_configure_append() {
+
+    if [ -e "${S}/tools/perf/Makefile.perf" ]; then
+        sed -i 's,LD = $(CROSS_COMPILE)ld,#LD,' ${S}/tools/perf/Makefile.perf
+    fi
+    if [ -e "${S}/tools/lib/api/Makefile" ]; then
+       sed -i 's,LD = $(CROSS_COMPILE)LD,#LD,' ${S}/tools/lib/api/Makefile
+    fi
+
     if [ -e "${S}/tools/perf/util/intel-pt-decoder/insn.c" ]; then
         mkdir -p ${B}/util/intel-pt-decoder/
         cp ${S}/tools/perf/util/intel-pt-decoder/insn.* ${B}/util/intel-pt-decoder/
