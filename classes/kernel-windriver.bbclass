@@ -114,7 +114,7 @@ do_deploy_append() {
 
 	install -d ${DEPLOYDIR}
 
-	install -m 0644 ${D}/boot/System.map-${KERNEL_VERSION} ${DEPLOYDIR}/${KERNEL_SYSTEM_MAP_BASE_NAME}
+	install -m 0644 ${STAGING_KERNEL_BUILDDIR}/System.map-${KERNEL_VERSION} ${DEPLOYDIR}/${KERNEL_SYSTEM_MAP_BASE_NAME}
 	install -m 0644 ${D}/boot/vmlinux-${KERNEL_VERSION} ${DEPLOYDIR}/${VMLINUX_SYMBOLS_BASE_NAME}
 
 	cd ${DEPLOYDIR}
