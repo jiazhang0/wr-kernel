@@ -48,7 +48,7 @@ do_install_append() {
 
 PACKAGES =+ "\
 	     ${PN}-iwlwifi-5000-5 \
-	     ${PN}-iwlwifi-8000C-13 \
+	     ${PN}-iwlwifi-8000c-13 \
 	     ${PN}-ibt-hw-37.7.10-fw-1.80.2.3.d \
 	     ${PN}-ibt-hw-37.8.10-fw-1.10.2.27.d \
 	     ${PN}-ibt-11-5 \
@@ -62,47 +62,47 @@ PACKAGES =+ "\
 	     ${PN}-bnx2-mips-06-6.2.3 \
 	     ${PN}-rtl8168g-2 \
 	     ${PN}-i915-license \
-	     ${PN}-bxt_dmc_ver1 \
-	     ${PN}-skl_dmc_ver1 \
-	     ${PN}-skl_guc_ver1 \
-	     ${PN}-skl_guc_ver4 \
+	     ${PN}-bxt-dmc-ver1 \
+	     ${PN}-skl-dmc-ver1 \
+	     ${PN}-skl-guc-ver1 \
+	     ${PN}-skl-guc-ver4 \
 	    "
 
-LICENSE_${PN}-bxt_dmc_ver1 = "Firmware-i915"
-LICENSE_${PN}-skl_dmc_ver1 = "Firmware-i915"
-LICENSE_${PN}-skl_guc_ver1 = "Firmware-i915"
-LICENSE_${PN}-skl_guc_ver4 = "Firmware-i915"
+LICENSE_${PN}-bxt-dmc-ver1 = "Firmware-i915"
+LICENSE_${PN}-skl-dmc-ver1 = "Firmware-i915"
+LICENSE_${PN}-skl-guc-ver1 = "Firmware-i915"
+LICENSE_${PN}-skl-guc-ver4 = "Firmware-i915"
 
 FILES_${PN}-i915-license = "${FWPATH}/LICENSE.i915"
 
-FILES_${PN}-bxt_dmc_ver1 = " \
+FILES_${PN}-bxt-dmc-ver1 = " \
 	${FWPATH}/i915/bxt_dmc_ver1*.bin \
 "
 
-FILES_${PN}-skl_dmc_ver1 = " \
+FILES_${PN}-skl-dmc-ver1 = " \
 	${FWPATH}/i915/skl_dmc_ver1*.bin \
 "
 
-FILES_${PN}-skl_guc_ver1 = " \
+FILES_${PN}-skl-guc-ver1 = " \
 	${FWPATH}/i915/skl_guc_ver1*.bin \
 "
 
-FILES_${PN}-skl_guc_ver4 = " \
+FILES_${PN}-skl-guc-ver4 = " \
 	${FWPATH}/i915/skl_guc_ver4*.bin \
 "
 
-RDEPENDS_${PN}-bxt_dmc_ver1 += "${PN}-i915-license"
-RDEPENDS_${PN}-skl_dmc_ver1 += "${PN}-i915-license"
-RDEPENDS_${PN}-skl_guc_ver1 += "${PN}-i915-license"
-RDEPENDS_${PN}-skl_guc_ver4 += "${PN}-i915-license"
+RDEPENDS_${PN}-bxt-dmc-ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl-dmc-ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl-guc-ver1 += "${PN}-i915-license"
+RDEPENDS_${PN}-skl-guc-ver4 += "${PN}-i915-license"
 
 RDEPENDS_${PN}-iwlwifi-5000-5 = "${PN}-iwlwifi-license"
 FILES_${PN}-iwlwifi-5000-5 = " \
   ${FWPATH}/iwlwifi-5000-5.ucode \
 "
 
-RDEPENDS_${PN}-iwlwifi-8000C-13 = "${PN}-iwlwifi-license"
-FILES_${PN}-iwlwifi-8000C-13 = " \
+RDEPENDS_${PN}-iwlwifi-8000c-13 = "${PN}-iwlwifi-license"
+FILES_${PN}-iwlwifi-8000c-13 = " \
   ${FWPATH}/iwlwifi-8000C-13.ucode \
 "
 
