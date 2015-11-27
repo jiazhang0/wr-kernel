@@ -36,7 +36,7 @@ do_deploy () {
       cp -r ${S}/${i}/${i}/* ${DEPLOYDIR}/rcw-${i}
       cp -r ${S}/${i}/${i}/* ${DEPLOY_DIR_IMAGE}/rcw-${i}
 	  cd ${WRL_EXPORT_DIR}
-	  ln -s ${DEPLOY_DIR_IMAGE}/rcw-${i} rcw-${i}
+	  ln -sf ${DEPLOY_DIR_IMAGE}/rcw-${i} rcw-${i}
 	
     done
 }
