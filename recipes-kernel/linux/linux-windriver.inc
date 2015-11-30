@@ -12,8 +12,9 @@ require recipes-kernel/linux/linux-yocto.inc
 # and this allows Wind River overrides
 inherit kernel-windriver
 
-# A method to install/update for bzImage on a deployed target
-inherit kernel-grub
+KERNELLOADEREXTENSION ?= ""
+
+inherit ${KERNELLOADEREXTENSION}
 
 # KMETA = "meta"
 
