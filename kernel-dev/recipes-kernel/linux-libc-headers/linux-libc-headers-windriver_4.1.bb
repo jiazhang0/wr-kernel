@@ -13,7 +13,7 @@ PROVIDES = "linux-libc-headers"
 RPROVIDES_${PN}-dev = "linux-libc-headers-dev"
 RPROVIDES_${PN}-dbg = "linux-libc-headers-dbg"
 
-PV = "3.10"
+PV = "4.1"
 PR = "r0"
 
 INHIBIT_DEFAULT_DEPS = "1"
