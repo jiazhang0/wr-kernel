@@ -1,0 +1,181 @@
+From 1438f013a2ac70ca5b9b80c44f5b6cda65a30eac Mon Sep 17 00:00:00 2001
+From: Christopher Covington <cov@codeaurora.org>
+Date: Fri, 31 Jul 2015 10:36:26 -0400
+Subject: [PATCH 3/4] Pass task_size to vma_area_is_private()
+
+If we want one CRIU binary to work across all AArch64 kernel
+configurations, a single task size value cannot be hard coded. Since
+vma_area_is_private() is used by both restorer blob code and non
+restorer blob code, which must use different variables for recording
+the task size, make task_size a function argument and modify the call
+sites accordingly. This fixes the following error on AArch64 kernels
+with CONFIG_ARM64_64K_PAGES=y.
+
+  pie: Error (pie/restorer.c:929): Can't restore 0x3ffb7e70000 mapping w>
+  pie: ith 0xfffffffffffffff7
+
+Signed-off-by: Christopher Covington <cov@codeaurora.org>
+Signed-off-by: Pavel Emelyanov <xemul@parallels.com>
+---
+ cr-restore.c   | 10 +++++-----
+ include/vma.h  | 10 ++++++----
+ mem.c          |  6 +++---
+ pie/restorer.c |  6 +++---
+ proc_parse.c   |  2 +-
+ 5 files changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/cr-restore.c b/cr-restore.c
+index a475802..1aa0919 100644
+--- a/cr-restore.c
++++ b/cr-restore.c
+@@ -269,7 +269,7 @@ static int map_private_vma(struct vma_area *vma, void **tgt_addr,
+ 		if (p->e->start > vma->e->start)
+ 			 break;
+ 
+-		if (!vma_area_is_private(p))
++		if (!vma_area_is_private(p, kdat.task_size))
+ 			continue;
+ 
+ 		 if (p->e->end != vma->e->end ||
+@@ -381,7 +381,7 @@ static int premap_priv_vmas(struct vm_area_list *vmas, void *at)
+ 		}
+ 		pstart = vma->e->start;
+ 
+-		if (!vma_area_is_private(vma))
++		if (!vma_area_is_private(vma, kdat.task_size))
+ 			continue;
+ 
+ 		ret = map_private_vma(vma, &at, &pvma, parent_vmas);
+@@ -447,7 +447,7 @@ static int restore_priv_vma_content(void)
+ 			 */
+ 			if (va < vma->e->start)
+ 				goto err_addr;
+-			else if (unlikely(!vma_area_is_private(vma))) {
++			else if (unlikely(!vma_area_is_private(vma, kdat.task_size))) {
+ 				pr_err("Trying to restore page for non-private VMA\n");
+ 				goto err_addr;
+ 			}
+@@ -590,7 +590,7 @@ static int unmap_guard_pages()
+ 	struct list_head *vmas = &rsti(current)->vmas.h;
+ 
+ 	list_for_each_entry(vma, vmas, list) {
+-		if (!vma_area_is_private(vma))
++		if (!vma_area_is_private(vma, kdat.task_size))
+ 			continue;
+ 
+ 		if (vma->e->flags & MAP_GROWSDOWN) {
+@@ -2713,7 +2713,7 @@ static int sigreturn_restore(pid_t pid, CoreEntry *core)
+ 
+ 		*vme = *vma->e;
+ 
+-		if (vma_area_is_private(vma))
++		if (vma_area_is_private(vma, kdat.task_size))
+ 			vma_premmaped_start(vme) = vma->premmaped_addr;
+ 	}
+ 
+diff --git a/include/vma.h b/include/vma.h
+index 8b7a06c..6c28136 100644
+--- a/include/vma.h
++++ b/include/vma.h
+@@ -92,17 +92,19 @@ static inline int in_vma_area(struct vma_area *vma, unsigned long addr)
+ 		addr < (unsigned long)vma->e->end;
+ }
+ 
+-static inline bool vma_entry_is_private(VmaEntry *entry)
++static inline bool vma_entry_is_private(VmaEntry *entry,
++					unsigned long task_size)
+ {
+ 	return vma_entry_is(entry, VMA_AREA_REGULAR)	&&
+ 		(vma_entry_is(entry, VMA_ANON_PRIVATE)	||
+ 		 vma_entry_is(entry, VMA_FILE_PRIVATE)) &&
+-		 (entry->end <= TASK_SIZE);
++		 (entry->end <= task_size);
+ }
+ 
+-static inline bool vma_area_is_private(struct vma_area *vma)
++static inline bool vma_area_is_private(struct vma_area *vma,
++				       unsigned long task_size)
+ {
+-	return vma_entry_is_private(vma->e);
++	return vma_entry_is_private(vma->e, task_size);
+ }
+ 
+ #endif /* __CR_VMA_H__ */
+diff --git a/mem.c b/mem.c
+index 1821874..989efc3 100644
+--- a/mem.c
++++ b/mem.c
+@@ -178,7 +178,7 @@ static struct parasite_dump_pages_args *prep_dump_pages_args(struct parasite_ctl
+ 	args->nr_vmas = 0;
+ 
+ 	list_for_each_entry(vma, &vma_area_list->h, list) {
+-		if (!vma_area_is_private(vma))
++		if (!vma_area_is_private(vma, kdat.task_size))
+ 			continue;
+ 		if (vma->e->prot & PROT_READ)
+ 			continue;
+@@ -293,7 +293,7 @@ static int __parasite_dump_pages_seized(struct parasite_ctl *ctl,
+ 		u64 off = 0;
+ 		u64 *map;
+ 
+-		if (!vma_area_is_private(vma_area))
++		if (!vma_area_is_private(vma_area, kdat.task_size))
+ 			continue;
+ 
+ 		map = pmc_get_map(&pmc, vma_area);
+@@ -441,7 +441,7 @@ int prepare_mm_pid(struct pstree_item *i)
+ 		}
+ 		list_add_tail(&vma->list, &ri->vmas.h);
+ 
+-		if (vma_area_is_private(vma)) {
++		if (vma_area_is_private(vma, kdat.task_size)) {
+ 			ri->vmas.priv_size += vma_area_len(vma);
+ 			if (vma->e->flags & MAP_GROWSDOWN)
+ 				ri->vmas.priv_size += PAGE_SIZE;
+diff --git a/pie/restorer.c b/pie/restorer.c
+index 3e582cc..5e1db1f 100644
+--- a/pie/restorer.c
++++ b/pie/restorer.c
+@@ -878,7 +878,7 @@ long __export_restore_task(struct task_restore_args *args)
+ 	for (i = 0; i < args->vmas_n; i++) {
+ 		vma_entry = args->vmas + i;
+ 
+-		if (!vma_entry_is_private(vma_entry))
++		if (!vma_entry_is_private(vma_entry, args->task_size))
+ 			continue;
+ 
+ 		if (vma_entry->end >= args->task_size)
+@@ -896,7 +896,7 @@ long __export_restore_task(struct task_restore_args *args)
+ 	for (i = args->vmas_n - 1; i >= 0; i--) {
+ 		vma_entry = args->vmas + i;
+ 
+-		if (!vma_entry_is_private(vma_entry))
++		if (!vma_entry_is_private(vma_entry, args->task_size))
+ 			continue;
+ 
+ 		if (vma_entry->start > args->task_size)
+@@ -919,7 +919,7 @@ long __export_restore_task(struct task_restore_args *args)
+ 		if (!vma_entry_is(vma_entry, VMA_AREA_REGULAR))
+ 			continue;
+ 
+-		if (vma_entry_is_private(vma_entry))
++		if (vma_entry_is_private(vma_entry, args->task_size))
+ 			continue;
+ 
+ 		va = restore_mapping(vma_entry);
+diff --git a/proc_parse.c b/proc_parse.c
+index 5a61b6d..3b65c01 100644
+--- a/proc_parse.c
++++ b/proc_parse.c
+@@ -473,7 +473,7 @@ static int vma_list_add(struct vma_area *vma_area,
+ 
+ 	list_add_tail(&vma_area->list, &vma_area_list->h);
+ 	vma_area_list->nr++;
+-	if (vma_area_is_private(vma_area)) {
++	if (vma_area_is_private(vma_area, kdat.task_size)) {
+ 		unsigned long pages;
+ 
+ 		pages = vma_area_len(vma_area) / PAGE_SIZE;
+-- 
+1.9.1
+

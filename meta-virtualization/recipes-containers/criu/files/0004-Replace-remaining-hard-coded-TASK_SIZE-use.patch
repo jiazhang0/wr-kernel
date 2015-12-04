@@ -1,0 +1,132 @@
+From f9ae6d9dd4e4a1f4bc6db7f9e9d552ee7fa175a0 Mon Sep 17 00:00:00 2001
+From: Christopher Covington <cov@codeaurora.org>
+Date: Fri, 31 Jul 2015 10:36:27 -0400
+Subject: [PATCH 4/4] Replace remaining hard-coded TASK_SIZE use
+
+If we want one CRIU binary to work across all AArch64 kernel
+configurations, a single task size value cannot be hard coded. While
+trivial applications successfully checkpoint and restore on AArch64
+kernels with CONFIG_ARM64_64K_PAGES=y without this patch, replacing
+the remaining use of the hard-coded value seems like the best way to
+guard against failures that more complex process trees and future uses
+may expose.
+
+Signed-off-by: Christopher Covington <cov@codeaurora.org>
+Signed-off-by: Pavel Emelyanov <xemul@parallels.com>
+---
+ arch/aarch64/include/asm/types.h | 7 ++-----
+ arch/aarch64/vdso.c              | 2 +-
+ arch/arm/crtools.c               | 3 ++-
+ cr-restore.c                     | 2 +-
+ pagemap-cache.c                  | 5 +++--
+ parasite-syscall.c               | 2 +-
+ 6 files changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/arch/aarch64/include/asm/types.h b/arch/aarch64/include/asm/types.h
+index 0846dd9..d6c890d 100644
+--- a/arch/aarch64/include/asm/types.h
++++ b/arch/aarch64/include/asm/types.h
+@@ -61,15 +61,12 @@ typedef struct user_pt_regs user_regs_struct_t;
+ #define REG_IP(regs)		((u64)(regs).pc)
+ #define REG_SYSCALL_NR(regs)	((u64)(regs).regs[8])
+ 
+-// Copied from the Linux kernel arch/arm64/include/asm/memory.h
+-// FIXME: what about a 32bit task?
+-
+-#define TASK_SIZE (1ULL << 39)
+-
+ /*
+  * Range for task size calculated from the following Linux kernel files:
+  *   arch/arm64/include/asm/memory.h
+  *   arch/arm64/Kconfig
++ *
++ * TODO: handle 32 bit tasks
+  */
+ #define TASK_SIZE_MIN (1UL << 39)
+ #define TASK_SIZE_MAX (1UL << 48)
+diff --git a/arch/aarch64/vdso.c b/arch/aarch64/vdso.c
+index 43d9637..2c127a4 100644
+--- a/arch/aarch64/vdso.c
++++ b/arch/aarch64/vdso.c
+@@ -87,7 +87,7 @@ int parasite_fixup_vdso(struct parasite_ctl *ctl, pid_t pid,
+ 			continue;
+ 		}
+ 
+-		if (vma->e->start > TASK_SIZE)
++		if (vma->e->start > kdat.task_size)
+ 			continue;
+ 
+ 		if (vma->e->flags & MAP_GROWSDOWN)
+diff --git a/arch/arm/crtools.c b/arch/arm/crtools.c
+index b692a7f..66405d2 100644
+--- a/arch/arm/crtools.c
++++ b/arch/arm/crtools.c
+@@ -18,6 +18,7 @@
+ #include "parasite-syscall.h"
+ #include "restorer.h"
+ #include "errno.h"
++#include "kerndat.h"
+ 
+ 
+ /*
+@@ -212,7 +213,7 @@ void *mmap_seized(struct parasite_ctl *ctl,
+ 
+ 	err = syscall_seized(ctl, __NR_mmap2, &map,
+ 			(unsigned long)addr, length, prot, flags, fd, offset >> 12);
+-	if (err < 0 || map > TASK_SIZE)
++	if (err < 0 || map > kdat.task_size)
+ 		map = 0;
+ 
+ 	return (void *)map;
+diff --git a/cr-restore.c b/cr-restore.c
+index 1aa0919..b8b4473 100644
+--- a/cr-restore.c
++++ b/cr-restore.c
+@@ -2009,7 +2009,7 @@ static long restorer_get_vma_hint(struct list_head *tgt_vma_list,
+ 	VmaEntry end_e;
+ 
+ 	end_vma.e = &end_e;
+-	end_e.start = end_e.end = TASK_SIZE;
++	end_e.start = end_e.end = kdat.task_size;
+ 	prev_vma_end = PAGE_SIZE * 0x10; /* CONFIG_LSM_MMAP_MIN_ADDR=65536 */
+ 
+ 	s_vma = list_first_entry(self_vma_list, struct vma_area, list);
+diff --git a/pagemap-cache.c b/pagemap-cache.c
+index 9def587..9ce7b91 100644
+--- a/pagemap-cache.c
++++ b/pagemap-cache.c
+@@ -7,6 +7,7 @@
+ #include "util.h"
+ #include "log.h"
+ #include "vma.h"
++#include "kerndat.h"
+ 
+ #undef	LOG_PREFIX
+ #define LOG_PREFIX "pagemap-cache: "
+@@ -66,8 +67,8 @@ static int pmc_fill_cache(pmc_t *pmc, struct vma_area *vma)
+ 	size_t len = vma_area_len(vma);
+ 	size_t size_map;
+ 
+-	if (high > TASK_SIZE)
+-		high = TASK_SIZE;
++	if (high > kdat.task_size)
++		high = kdat.task_size;
+ 
+ 	pmc->start = vma->e->start;
+ 	pmc->end = vma->e->end;
+diff --git a/parasite-syscall.c b/parasite-syscall.c
+index 6d2e7fc..ee339db 100644
+--- a/parasite-syscall.c
++++ b/parasite-syscall.c
+@@ -56,7 +56,7 @@ static struct vma_area *get_vma_by_ip(struct list_head *vma_area_list, unsigned
+ 	struct vma_area *vma_area;
+ 
+ 	list_for_each_entry(vma_area, vma_area_list, list) {
+-		if (vma_area->e->start >= TASK_SIZE)
++		if (vma_area->e->start >= kdat.task_size)
+ 			continue;
+ 		if (!(vma_area->e->prot & PROT_EXEC))
+ 			continue;
+-- 
+1.9.1
+

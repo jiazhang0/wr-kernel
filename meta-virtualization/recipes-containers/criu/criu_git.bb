@@ -18,10 +18,14 @@ PR = "r0"
 PV = "1.6+git${SRCPV}"
 
 SRC_URI = "git://github.com/xemul/criu.git;protocol=git \
-	   file://0001-criu-Fix-toolchain-hardcode.patch \
+       file://0001-criu-Fix-toolchain-hardcode.patch \
 	   file://0002-criu-Skip-documentation-install.patch \
        file://0001-criu-Change-libraries-install-directory.patch \
-	  "
+       file://0001-kerndat-Introduce-task_size-variable.patch \
+       file://0002-restorer-Replace-most-hard-coded-TASK_SIZE-use.patch \
+       file://0003-Pass-task_size-to-vma_area_is_private.patch \
+       file://0004-Replace-remaining-hard-coded-TASK_SIZE-use.patch \
+       "
 
 COMPATIBLE_HOST = "(x86_64|arm|aarch64).*-linux"
 

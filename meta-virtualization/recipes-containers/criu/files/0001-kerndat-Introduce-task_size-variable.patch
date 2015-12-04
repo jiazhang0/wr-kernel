@@ -1,0 +1,140 @@
+From c0c0546c31e6df4932669f4740197bb830a24c8d Mon Sep 17 00:00:00 2001
+From: Christopher Covington <cov@codeaurora.org>
+Date: Fri, 31 Jul 2015 10:36:24 -0400
+Subject: [PATCH 1/4] kerndat: Introduce task_size variable
+
+If we want one CRIU binary to work across all AArch64 kernel
+configurations, a single task size value cannot be hard coded.
+
+Signed-off-by: Christopher Covington <cov@codeaurora.org>
+Signed-off-by: Pavel Emelyanov <xemul@parallels.com>
+---
+ arch/aarch64/include/asm/types.h | 20 ++++++++++++++++++++
+ arch/arm/include/asm/types.h     |  2 ++
+ arch/ppc64/include/asm/types.h   |  2 ++
+ arch/x86/include/asm/types.h     |  2 ++
+ include/kerndat.h                |  1 +
+ kerndat.c                        | 11 +++++++++++
+ 6 files changed, 38 insertions(+)
+
+diff --git a/arch/aarch64/include/asm/types.h b/arch/aarch64/include/asm/types.h
+index 6512f67..0846dd9 100644
+--- a/arch/aarch64/include/asm/types.h
++++ b/arch/aarch64/include/asm/types.h
+@@ -66,6 +66,26 @@ typedef struct user_pt_regs user_regs_struct_t;
+ 
+ #define TASK_SIZE (1ULL << 39)
+ 
++/*
++ * Range for task size calculated from the following Linux kernel files:
++ *   arch/arm64/include/asm/memory.h
++ *   arch/arm64/Kconfig
++ */
++#define TASK_SIZE_MIN (1UL << 39)
++#define TASK_SIZE_MAX (1UL << 48)
++
++int munmap(void *addr, size_t length);
++
++static inline unsigned long task_size() {
++	unsigned long task_size;
++
++	for (task_size = TASK_SIZE_MIN; task_size < TASK_SIZE_MAX; task_size <<= 1)
++		if (munmap((void *)task_size, page_size()))
++			break;
++
++	return task_size;
++}
++
+ #define AT_VECTOR_SIZE 40
+ 
+ typedef UserAarch64RegsEntry UserRegsEntry;
+diff --git a/arch/arm/include/asm/types.h b/arch/arm/include/asm/types.h
+index 4efebdd..915db61 100644
+--- a/arch/arm/include/asm/types.h
++++ b/arch/arm/include/asm/types.h
+@@ -98,6 +98,8 @@ struct user_vfp_exc {
+ 
+ #define TASK_SIZE 0xbf000000
+ 
++static inline unsigned long task_size() { return TASK_SIZE; }
++
+ #define AT_VECTOR_SIZE 40
+ 
+ typedef UserArmRegsEntry UserRegsEntry;
+diff --git a/arch/ppc64/include/asm/types.h b/arch/ppc64/include/asm/types.h
+index 934a4fb..3412dc7 100644
+--- a/arch/ppc64/include/asm/types.h
++++ b/arch/ppc64/include/asm/types.h
+@@ -105,6 +105,8 @@ typedef uint64_t tls_t;
+ #define TASK_SIZE_USER64 (0x0000400000000000UL)
+ #define TASK_SIZE TASK_SIZE_USER64
+ 
++static inline unsigned long task_size() { return TASK_SIZE; }
++
+ static inline void *decode_pointer(uint64_t v) { return (void*)v; }
+ static inline uint64_t encode_pointer(void *p) { return (uint64_t)p; }
+ 
+diff --git a/arch/x86/include/asm/types.h b/arch/x86/include/asm/types.h
+index db41b75..b2d0189 100644
+--- a/arch/x86/include/asm/types.h
++++ b/arch/x86/include/asm/types.h
+@@ -119,6 +119,8 @@ typedef struct {
+ # define TASK_SIZE	(0xffffe000)
+ #endif
+ 
++static inline unsigned long task_size() { return TASK_SIZE; }
++
+ typedef u64 auxv_t;
+ typedef u32 tls_t;
+ 
+diff --git a/include/kerndat.h b/include/kerndat.h
+index c9e902a..b9ae749 100644
+--- a/include/kerndat.h
++++ b/include/kerndat.h
+@@ -23,6 +23,7 @@ struct kerndat_s {
+ 	bool has_dirty_track;
+ 	bool has_memfd;
+ 	bool has_fdinfo_lock;
++	unsigned long task_size;
+ };
+ 
+ extern struct kerndat_s kdat;
+diff --git a/kerndat.c b/kerndat.c
+index 54ba8c7..4845532 100644
+--- a/kerndat.c
++++ b/kerndat.c
+@@ -273,6 +273,13 @@ static bool kerndat_has_memfd_create(void)
+ 	return 0;
+ }
+ 
++static int get_task_size(void)
++{
++	kdat.task_size = task_size();
++	pr_debug("Found task size of %lx\n", kdat.task_size);
++	return 0;
++}
++
+ int kerndat_fdinfo_has_lock()
+ {
+ 	int fd, pfd = -1, exit_code = -1, len;
+@@ -323,6 +330,8 @@ int kerndat_init(void)
+ 		ret = get_last_cap();
+ 	if (!ret)
+ 		ret = kerndat_fdinfo_has_lock();
++	if (!ret)
++		ret = get_task_size();
+ 
+ 	kerndat_lsm();
+ 
+@@ -344,6 +353,8 @@ int kerndat_init_rst(void)
+ 		ret = get_last_cap();
+ 	if (!ret)
+ 		ret = kerndat_has_memfd_create();
++	if (!ret)
++		ret = get_task_size();
+ 
+ 	kerndat_lsm();
+ 
+-- 
+1.9.1
+
