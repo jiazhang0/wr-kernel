@@ -8,6 +8,8 @@ SRCREV = "3ffb479929c31cbae09de08f94f58b8f0f061d91"
 
 S = "${WORKDIR}/git"
 
+CFLAGS_remove = "-O2"
+
 do_compile() {
 	oe_runmake
 }
