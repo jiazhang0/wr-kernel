@@ -1,0 +1,48 @@
+From 26e2375cff9139f51222b668686eab4b4e24d3e2 Mon Sep 17 00:00:00 2001
+From: Kevin Hao <kexin.hao@windriver.com>
+Date: Thu, 10 Dec 2015 02:24:54 -0500
+Subject: [PATCH] kexec/ppc64: use only the crashing cpu to boot the crash
+ kernel
+
+In the ppc32 code, we have explicitly add "maxcpus=1" in the crashing
+kernel command line to only using the crash cpu to boot the crash
+kernel. Given it makes no sense to kick all the cpus online in the
+crashing kernel, we choose to be compatible with the ppc32 on ppc64
+and also add "maxcpus=1" to command line.
+
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+---
+ kexec/arch/ppc64/crashdump-ppc64.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/kexec/arch/ppc64/crashdump-ppc64.c b/kexec/arch/ppc64/crashdump-ppc64.c
+index 6214b83..23c1fe9 100644
+--- a/kexec/arch/ppc64/crashdump-ppc64.c
++++ b/kexec/arch/ppc64/crashdump-ppc64.c
+@@ -364,6 +364,15 @@ static void ultoa(uint64_t i, char *str)
+ 	}
+ }
+ 
++/* Append str to cmdline */
++static void add_cmdline(char *cmdline, char *str)
++{
++	int cmdlen = strlen(cmdline) + strlen(str);
++	if (cmdlen > (COMMAND_LINE_SIZE - 1))
++		die("Command line overflow\n");
++	strcat(cmdline, str);
++}
++
+ static int add_cmdline_param(char *cmdline, uint64_t addr, char *cmdstr,
+ 				char *byte)
+ {
+@@ -461,6 +470,7 @@ int load_crashdump_segments(struct kexec_info *info, char* mod_cmdline,
+ 	 * read by flatten_device_tree and modified if required
+ 	 */
+ 	add_cmdline_param(mod_cmdline, elfcorehdr, " elfcorehdr=", "K");
++	add_cmdline(mod_cmdline, " maxcpus=1");
+ 	return 0;
+ }
+ 
+-- 
+1.9.1
+
