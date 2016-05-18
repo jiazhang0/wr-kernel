@@ -145,21 +145,3 @@ do_extract_kernel_output() {
 # This is a standalone task
 addtask extract_kernel_output after do_compile_kernelmodules
 
-python __anonymous () {
-    if d.getVar('INITRAMFS_IMAGE_BUNDLE_INSTALL', True) == '1':
-
-        tfmake = d.getVar('KERNEL_IMAGETYPE_FOR_MAKE', True) or ""
-
-        for type in tfmake.split():
-            typelower = type.lower()
-            imagedest = d.getVar('KERNEL_IMAGEDEST', True)
-            priority = d.getVar('KERNEL_PRIORITY', True)
-            image_pver = '-initramfs-${MACHINE}.bin '
-
-            postinst = '#!/bin/sh\n' + 'update-alternatives --install /' + imagedest + '/' + type + ' ' + type + ' ' + '/' + imagedest + '/' + type + image_pver + priority + ' || true' + '\n'
-            d.setVar('pkg_postinst_kernel-image-' + typelower, postinst)
-
-            postrm = '#!/bin/sh\n' + 'update-alternatives --remove' + ' ' + type + ' ' + type + image_pver + '|| true' + '\n'
-            d.setVar('pkg_postrm_kernel-image-' + typelower, postrm)
-}
-
