@@ -30,11 +30,7 @@ INSTALL_BUNDLE    = "${@'1' if d.getVar('INITRAMFS_IMAGE', True) and \
                                d.getVar('INITRAMFS_IMAGE_BUNDLE', True) == '1' and \
                                d.getVar('INITRAMFS_IMAGE_INSTALL', True) == '1' else '0'}"
 
-FILES_${PN} = "${@['', '/boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin', \
-                   '/boot/${KERNEL_IMAGETYPE}-initramfs-bundle-${MACHINE}.bin' \
-                  ][ \
-                   ${INSTALL_INITRAMFS} | (${INSTALL_BUNDLE} << 1) \
-                  ]}"
+FILES_${PN} = "/boot/*"
 ALLOW_EMPTY_${PN} = "1"
 INITRAMFS_BASE_NAME = "${KERNEL_IMAGETYPE}-initramfs-${PV}-${PR}-${MACHINE}-${DATETIME}"
 INITRAMFS_BASE_NAME[vardepsexclude] = "DATETIME"
@@ -54,14 +50,14 @@ do_install() {
 		for img in cpio.gz cpio.lzo cpio.lzma cpio.xz; do
 			if [ -e "${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.$img" ]; then
 				install -d ${D}/boot
-				install -m 0644 ${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.$img ${D}/boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin
+				install -m 0644 ${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.$img ${D}/boot/${INITRAMFS_IMAGE}-${MACHINE}.$img
 				break
 			fi
 		done
 	elif [ "x${INSTALL_BUNDLE}" = "x1" ] ; then
 		if [ -e "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin" ]; then
 			install -d ${D}/boot
-			install -m 0644 ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin ${D}/boot/${KERNEL_IMAGETYPE}-initramfs-bundle-${MACHINE}.bin
+			install -m 0644 ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin ${D}/boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin
 		fi
 	fi
 }
@@ -71,14 +67,14 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 pkg_postinst_${PN} () {
 #!/bin/sh
     if [ "x${INSTALL_BUNDLE}" = "x1" ] ; then
-        update-alternatives --install /boot/${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE} /boot/${KERNEL_IMAGETYPE}-initramfs-bundle-${MACHINE}.bin 50101 || true
+        update-alternatives --install /boot/${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE} /boot/${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin 50101 || true
     fi
 }
 
 pkg_prerm_${PN} () {
 #!/bin/sh
     if [ "x${INSTALL_BUNDLE}" = "x1" ] ; then
-        update-alternatives --remove ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-initramfs-bundle-${MACHINE}.bin || true
+        update-alternatives --remove ${KERNEL_IMAGETYPE} ${KERNEL_IMAGETYPE}-initramfs-${MACHINE}.bin || true
     fi
 }
 
