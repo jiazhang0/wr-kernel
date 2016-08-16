@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2012 Wind River Systems, Inc.
 #
-SRCREV="${AUTOREV}"
+SRCREV="8cf8b083ca078f79ccd5741d639f72e14aab25bd"
 LOCALCOUNT = "0"
 
 THISDIR := "${@os.path.dirname(d.getVar('FILE', True))}"
