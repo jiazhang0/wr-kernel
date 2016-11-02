@@ -5,7 +5,6 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 SRC_URI += "\
             file://libvirtd.sh \
-            file://libvirt-Fix-virnetsaslcontext-build-error.patch \
            "
 
 PACKAGECONFIG ?= "qemu yajl uml openvz vmware vbox esx \
