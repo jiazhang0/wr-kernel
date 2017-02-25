@@ -147,8 +147,7 @@ addtask extract_kernel_output after do_compile_kernelmodules
 
 python __anonymous () {
     if d.getVar('INITRAMFS_IMAGE', True) and \
-       d.getVar('INITRAMFS_IMAGE_BUNDLE', True) == '1' and \
-       d.getVar('INITRAMFS_IMAGE_INSTALL', True) == '1':
+       d.getVar('INITRAMFS_IMAGE_BUNDLE', True) == '1':
 
         tfmake = d.getVar('KERNEL_IMAGETYPE_FOR_MAKE', True) or ""
 

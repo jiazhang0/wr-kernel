@@ -24,11 +24,9 @@ do_unpack[depends] += "virtual/kernel:do_deploy"
 B = "${WORKDIR}/${BPN}-${PV}"
 
 INSTALL_INITRAMFS = "${@'1' if d.getVar('INITRAMFS_IMAGE', True) and \
-                               d.getVar('INITRAMFS_IMAGE_BUNDLE', True) != '1' and \
-                               d.getVar('INITRAMFS_IMAGE_INSTALL', True) == '1' else '0'}"
+                               d.getVar('INITRAMFS_IMAGE_BUNDLE', True) != '1' else '0'}"
 INSTALL_BUNDLE    = "${@'1' if d.getVar('INITRAMFS_IMAGE', True) and \
-                               d.getVar('INITRAMFS_IMAGE_BUNDLE', True) == '1' and \
-                               d.getVar('INITRAMFS_IMAGE_INSTALL', True) == '1' else '0'}"
+                               d.getVar('INITRAMFS_IMAGE_BUNDLE', True) == '1' else '0'}"
 
 FILES_${PN} = "/boot/*"
 ALLOW_EMPTY_${PN} = "1"
